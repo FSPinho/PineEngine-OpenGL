@@ -18,40 +18,47 @@ namespace PineEngine {
 
     ShaderSet::~ShaderSet() {
         LOG_DESTRUCTOR("ShaderSet");
-        this->_deleteShaders();
+        this->_unloadShaders();
     }
 
     void ShaderSet::setUniform(const std::string &name, const std::vector<float> &value) {
-        this->vecFloatUniforms.emplace_back(name, value);
+        this->uniforms.emplace(name, value);
+
+        if (this->areShadersLoaded) {
+            this->backend.setUniform(this->shadersId, name, value);
+        }
     }
 
     void ShaderSet::process() {
-        this->_loadShaders();
+        this->_maybeReloadShaders();
         this->backend.prepareShadersForRendering(this->shadersId);
     }
 
-    void ShaderSet::_loadShaders() {
+    void ShaderSet::_maybeReloadShaders() {
         const auto hasVertexShaderChanged = this->vertexShaderCodeFileWatch.hasChanged();
         const auto hasFragmentShaderChanged = this->fragmentShaderCodeFileWatch.hasChanged();
         if (!hasVertexShaderChanged && !hasFragmentShaderChanged) return;
+        this->_loadShaders();
+    }
 
+    void ShaderSet::_loadShaders() {
         const auto vertexShaderCode = this->vertexShaderCodeFile.readAsText();
         const auto fragmentShaderCode = this->fragmentShaderCodeFile.readAsText();
 
-        this->_deleteShaders();
+        this->_unloadShaders();
         this->shadersId = this->backend.createShaders(
             vertexShaderCode,
             fragmentShaderCode
         );
 
-        for (const auto &[name, value]: this->vecFloatUniforms) {
+        for (const auto &[name, value]: this->uniforms) {
             this->backend.setUniform(this->shadersId, name, value);
         }
 
         this->areShadersLoaded = true;
     }
 
-    void ShaderSet::_deleteShaders() {
+    void ShaderSet::_unloadShaders() {
         if (this->areShadersLoaded) {
             this->backend.deleteShaders(this->shadersId);
         }

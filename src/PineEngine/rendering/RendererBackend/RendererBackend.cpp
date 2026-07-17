@@ -1,7 +1,6 @@
 #include "RendererBackend.h"
 #include <string>
 #include <stdexcept>
-#include <cassert>
 
 
 namespace PineEngine {
@@ -28,7 +27,7 @@ namespace PineEngine {
     uint32_t RendererBackend::createGeometry() {
         uint32_t id;
         glGenVertexArrays(1, &id);
-        this->_debugMethod(FORMAT("RendererBackend - Created geometry {}", id));
+        this->_debugMethod(FORMAT("Created geometry {}", id));
         return id;
     }
 
@@ -38,46 +37,83 @@ namespace PineEngine {
 
     void RendererBackend::deleteGeometry(const uint32_t id) {
         glDeleteVertexArrays(1, &id);
-        this->_debugMethod(FORMAT("RendererBackend - Deleted geometry {}", id));
+        this->_debugMethod(FORMAT("Deleted geometry {}", id));
     }
 
     uint32_t RendererBackend::createDataBuffer() {
         uint32_t id;
         glGenBuffers(1, &id);
-        this->_debugMethod(FORMAT("RendererBackend - Created data buffer {}", id));
+        this->_debugMethod(FORMAT("Created data buffer {}", id));
         return id;
     }
 
-    void RendererBackend::populateVecFloat3DataBuffer(const uint32_t id, const std::vector<float> &data) {
-        assert(data.size() % 3 == 0 && "A vec3 array size should be divisible by 3");
-
-        const auto sizeInBytes = static_cast<GLsizeiptr>(data.size() * sizeof(data[0]));
+    void RendererBackend::allocateDataBuffer(uint32_t id, uint32_t sizeInBytes) {
         glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(
             GL_ARRAY_BUFFER,
             sizeInBytes,
-            data.data(),
+            nullptr,
             GL_STATIC_DRAW
         );
 
         this->_debugMethod(FORMAT(
-            "RendererBackend - Populated vec3 data buffer {} with {} bytes",
+            "Allocated data buffer {} with {} bytes",
             id, sizeInBytes
         ));
     }
 
-    void RendererBackend::populateIndexDataBuffer(uint32_t id, const std::vector<int> &data) {
-        const auto sizeInBytes = static_cast<GLsizeiptr>(data.size() * sizeof(data[0]));
+
+    void RendererBackend::populateDataBuffer(
+        const uint32_t id,
+        const void *data,
+        const uint32_t offsetInBytes,
+        const uint32_t sizeInBytes
+    ) {
+        glBindBuffer(GL_ARRAY_BUFFER, id);
+        glBufferSubData(
+            GL_ARRAY_BUFFER,
+            offsetInBytes,
+            sizeInBytes,
+            data
+        );
+
+        this->_debugMethod(FORMAT(
+            "Populated data buffer {} with offset={} and size={}",
+            id, offsetInBytes, sizeInBytes
+        ));
+    }
+
+    void RendererBackend::allocateIndexDataBuffer(const uint32_t id, uint32_t sizeInBytes) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
         glBufferData(
             GL_ELEMENT_ARRAY_BUFFER,
             sizeInBytes,
-            data.data(),
+            nullptr,
             GL_STATIC_DRAW
         );
 
         this->_debugMethod(FORMAT(
-            "RendererBackend - Populated int data buffer {} with {} bytes",
+            "Allocated index data buffer {} with {} bytes",
+            id, sizeInBytes
+        ));
+    }
+
+    void RendererBackend::populateIndexDataBuffer(
+        uint32_t id,
+        const void *data,
+        uint32_t offsetInBytes,
+        uint32_t sizeInBytes
+    ) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+        glBufferSubData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            offsetInBytes,
+            sizeInBytes,
+            data
+        );
+
+        this->_debugMethod(FORMAT(
+            "Populated index data buffer {} with {} bytes",
             id, sizeInBytes
         ));
     }
@@ -85,29 +121,32 @@ namespace PineEngine {
     void RendererBackend::deleteDataBuffer(const uint32_t id) {
         glDeleteBuffers(1, &id);
 
-        this->_debugMethod(FORMAT("RendererBackend - Deleted data buffer {}", id));
+        this->_debugMethod(FORMAT("Deleted data buffer {}", id));
     }
 
-    void RendererBackend::bindVecFloat3DataBufferToGeometry(
+    void RendererBackend::bindDataBufferToGeometry(
         const uint32_t geometryId,
         const uint32_t dataBufferId,
-        const uint32_t attributeIndex
+        const uint32_t attributeIndex,
+        const uint32_t dimensionality,
+        const uint32_t combinedDimensionality,
+        const uint32_t dataOffset
     ) {
         glBindVertexArray(geometryId);
         glBindBuffer(GL_ARRAY_BUFFER, dataBufferId);
         glVertexAttribPointer(
             attributeIndex,
-            3,
+            dimensionality,
             GL_FLOAT,
             GL_FALSE,
-            3 * sizeof(float),
-            nullptr
+            combinedDimensionality * sizeof(float),
+            reinterpret_cast<void *>(dataOffset * sizeof(float))
         );
         glEnableVertexAttribArray(attributeIndex);
 
         this->_debugMethod(FORMAT(
-            "RendererBackend - Bound data buffer {} to geometry {}",
-            dataBufferId, geometryId
+            "Bound data buffer {} to geometry {}, attr={}, dim={}, cdim={}, offset={}",
+            dataBufferId, geometryId, attributeIndex, dimensionality, combinedDimensionality, dataOffset
         ));
     }
 
@@ -119,7 +158,7 @@ namespace PineEngine {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dataBufferId);
 
         this->_debugMethod(FORMAT(
-            "RendererBackend - Bound data buffer {} to geometry {}",
+            "Bound data buffer {} to geometry {}",
             dataBufferId, geometryId
         ));
     }
@@ -150,7 +189,7 @@ namespace PineEngine {
         glDeleteShader(vertexShaderId);
         glDeleteShader(fragmentShaderId);
 
-        this->_debugMethod(FORMAT("RendererBackend - Created shaders {}", shaderProgramId));
+        this->_debugMethod(FORMAT("Created shaders {}", shaderProgramId));
 
         return shaderProgramId;
     }
@@ -162,19 +201,22 @@ namespace PineEngine {
     void RendererBackend::deleteShaders(const uint32_t id) {
         glDeleteProgram(id);
 
-        this->_debugMethod(FORMAT("RendererBackend - Deleted shaders {}", id));
+        this->_debugMethod(FORMAT("Deleted shaders {}", id));
     }
 
-    void RendererBackend::setUniform(const uint32_t shaderId, const std::string &name,
-                                     const std::vector<float> &value) {
-        const uint32_t uniformLocation = glGetUniformLocation(shaderId, name.c_str());
-        if (uniformLocation == -1) {
-            throw std::runtime_error(FORMAT("Uniform \"{}\" not found in the shader!", name));
-        }
+    void RendererBackend::setUniform(
+        const uint32_t shaderId,
+        const std::string &name,
+        const std::vector<float> &value
+    ) {
+        const uint32_t uniformLocation = this->_getUniformLocation(shaderId, name);
 
         glUseProgram(shaderId);
 
-        if (value.size() == 4) {
+        if (value.size() == 1) {
+            glUniform1f(
+                static_cast<GLint>(uniformLocation), value[0]);
+        } else if (value.size() == 4) {
             glUniform4f(
                 static_cast<GLint>(uniformLocation),
                 value[0], value[1],
@@ -184,7 +226,8 @@ namespace PineEngine {
             throw std::runtime_error("Uniform size not implemented!");
         }
 
-        this->_debugMethod(FORMAT("RendererBackend - Set uniform vec{}", value.size()));
+        this->_debugMethod("Set uniform", true);
+
     }
 
     void RendererBackend::drawTriangles(const uint32_t vertexCount) {
@@ -226,6 +269,14 @@ namespace PineEngine {
         }
 
         return id;
+    }
+
+    uint32_t RendererBackend::_getUniformLocation(const uint32_t shaderId, const std::string &name) {
+        const uint32_t uniformLocation = glGetUniformLocation(shaderId, name.c_str());
+        if (uniformLocation == -1) {
+            throw std::runtime_error(FORMAT("Uniform \"{}\" not found in the shader!", name));
+        }
+        return uniformLocation;
     }
 
     void RendererBackend::_debugMethod(const std::string_view label, const bool errorsOnly) {

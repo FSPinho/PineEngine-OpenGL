@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <PineEngine/util/File/File.h>
 #include <PineEngine/util/FileWatch/FileWatch.h>
 #include <PineEngine/rendering/RendererComponent/RendererComponent.h>
@@ -31,9 +32,10 @@ namespace PineEngine {
         File fragmentShaderCodeFile;
         FileWatch fragmentShaderCodeFileWatch;
 
-        std::vector<std::pair<std::string, std::vector<float>>> vecFloatUniforms;
+        std::unordered_map<std::string, std::vector<float>> uniforms;
 
+        void _maybeReloadShaders();
         void _loadShaders();
-        void _deleteShaders();
+        void _unloadShaders();
     };
 }

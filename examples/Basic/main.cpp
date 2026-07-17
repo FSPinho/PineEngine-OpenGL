@@ -8,6 +8,8 @@
 #include <PineEngine/rendering/FrameSwapper/FrameSwapper.h>
 #include <PineEngine/rendering/GeometryBuffer/GeometryBuffer.h>
 #include <PineEngine/rendering/ShaderSet/ShaderSet.h>
+#include <PineEngine/rendering/Timer/Timer.h>
+#include <PineEngine/util/Time/Time.h>
 
 
 int main() {
@@ -18,25 +20,41 @@ int main() {
         PineEngine::RendererBackend rendererContext(platform);
         PineEngine::Renderer renderer(rendererContext);
 
+        auto &timer = renderer.addComponent<PineEngine::Timer>(rendererContext);
+
         renderer.addComponent<PineEngine::FrameClearer>(rendererContext);
 
-        renderer.addComponent<PineEngine::ShaderSet>(
+        auto &shader = renderer.addComponent<PineEngine::ShaderSet>(
             rendererContext,
             std::string("../shaders/001_vertex.glsl"),
             std::string("../shaders/001_fragment.glsl")
-        ).setUniform("color", std::vector{{1.0f, 0.0f, 0.0f, 1.0f}});
+        );
 
         renderer.addComponent<PineEngine::GeometryBuffer>(
             rendererContext,
-            std::vector{
+            std::vector<PineEngine::VertexData>{
                 {
-                    0.5f, 0.5f, 0.0f, // top right
-                    0.5f, -0.5f, 0.0f, // bottom right
-                    -0.5f, -0.5f, 0.0f, // bottom left
-                    -0.5f, 0.5f, 0.0f // top left
+                    .name = "vertexInPosition",
+                    .data = std::vector{
+                        0.5f, 0.5f, 0.0f, // top right
+                        0.5f, -0.5f, 0.0f, // bottom right
+                        -0.5f, -0.5f, 0.0f, // bottom left
+                        -0.5f, 0.5f, 0.0f // top left
+                    },
+                    .dimensionality = 3
+                },
+                {
+                    .name = "vertexInColor",
+                    .data = std::vector{
+                        1.0f, 0.0f, 0.0f, 1.0f, // top right
+                        0.0f, 1.0f, 0.0f, 1.0f, // bottom right
+                        0.0f, 0.0f, 1.0f, 1.0f, // bottom left
+                        1.0f, 1.0f, 1.0f, 1.0f // top left
+                    },
+                    .dimensionality = 4
                 }
             },
-            std::vector{
+            std::vector<uint32_t>{
                 {
                     0, 1, 3, // first triangle
                     1, 2, 3 // second triangle
@@ -46,9 +64,13 @@ int main() {
 
         renderer.addComponent<PineEngine::FrameSwapper>(rendererContext);
 
-        platform.mainLoop([&platform, &inputManager, &renderer] {
+        platform.mainLoop([&platform, &inputManager, &renderer, &timer, &shader ] {
+            shader.setUniform("TIME", std::vector{timer.getElapsed()});
+
             inputManager.process();
             renderer.process();
+
+            timer.trackFPS();
 
             if (inputManager.isKeyPressed(PineEngine::InputKey::ESCAPE)) {
                 platform.requestStop();

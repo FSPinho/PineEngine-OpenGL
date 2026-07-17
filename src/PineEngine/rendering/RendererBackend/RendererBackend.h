@@ -18,13 +18,18 @@ namespace PineEngine {
         void deleteGeometry(uint32_t id);
 
         uint32_t createDataBuffer();
-        void populateVecFloat3DataBuffer(uint32_t id, const std::vector<float> &data);
-        void populateIndexDataBuffer(uint32_t id, const std::vector<int> &data);
+        void allocateDataBuffer(uint32_t id, uint32_t sizeInBytes);
+        void populateDataBuffer(uint32_t id, const void *data, uint32_t offsetInBytes, uint32_t sizeInBytes);
+        void allocateIndexDataBuffer(uint32_t id, uint32_t sizeInBytes);
+        void populateIndexDataBuffer(uint32_t id, const void *data, uint32_t offsetInBytes, uint32_t sizeInBytes);
         void deleteDataBuffer(uint32_t id);
-        void bindVecFloat3DataBufferToGeometry(
+        void bindDataBufferToGeometry(
             uint32_t geometryId,
             uint32_t dataBufferId,
-            uint32_t attributeIndex
+            uint32_t attributeIndex,
+            uint32_t dimensionality,
+            uint32_t combinedDimensionality,
+            uint32_t dataOffset
         );
         void bindIndexDataBufferToGeometry(
             uint32_t geometryId,
@@ -47,8 +52,8 @@ namespace PineEngine {
 
         void _initializeOpenGLContext();
         void _initializeViewport();
-
         uint32_t _loadShader(const std::string &shaderCode, uint32_t shaderType);
+        uint32_t _getUniformLocation(uint32_t shaderId, const std::string &name);
         void _debugMethod(std::string_view label, bool errorsOnly = false);
     };
 }

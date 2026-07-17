@@ -32,6 +32,8 @@ add_library(
         src/PineEngine/rendering/GeometryBuffer/GeometryBuffer.cpp
         src/PineEngine/rendering/ShaderSet/ShaderSet.h
         src/PineEngine/rendering/ShaderSet/ShaderSet.cpp
+        src/PineEngine/rendering/Timer/Timer.h
+        src/PineEngine/rendering/Timer/Timer.cpp
 
         src/PineEngine/Util/Log/Log.h
         src/PineEngine/Util/SerialID/SerialID.h
