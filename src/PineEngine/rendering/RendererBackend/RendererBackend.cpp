@@ -165,6 +165,28 @@ namespace PineEngine {
         this->_debugMethod(FORMAT("RendererBackend - Deleted shaders {}", id));
     }
 
+    void RendererBackend::setUniform(const uint32_t shaderId, const std::string &name,
+                                     const std::vector<float> &value) {
+        const uint32_t uniformLocation = glGetUniformLocation(shaderId, name.c_str());
+        if (uniformLocation == -1) {
+            throw std::runtime_error(FORMAT("Uniform \"{}\" not found in the shader!", name));
+        }
+
+        glUseProgram(shaderId);
+
+        if (value.size() == 4) {
+            glUniform4f(
+                static_cast<GLint>(uniformLocation),
+                value[0], value[1],
+                value[2], value[3]
+            );
+        } else {
+            throw std::runtime_error("Uniform size not implemented!");
+        }
+
+        this->_debugMethod(FORMAT("RendererBackend - Set uniform vec{}", value.size()));
+    }
+
     void RendererBackend::drawTriangles(const uint32_t vertexCount) {
         glDrawElements(
             GL_TRIANGLES,

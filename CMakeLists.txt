@@ -36,6 +36,11 @@ add_library(
         src/PineEngine/Util/Log/Log.h
         src/PineEngine/Util/SerialID/SerialID.h
         src/PineEngine/Util/SerialID/SerialID.cpp
+        src/PineEngine/Util/Time/Time.h
+        src/PineEngine/Util/File/File.h
+        src/PineEngine/Util/File/File.cpp
+        src/PineEngine/Util/FileWatch/FileWatch.h
+        src/PineEngine/Util/FileWatch/FileWatch.cpp
 )
 target_link_libraries(
         PineEngine PUBLIC

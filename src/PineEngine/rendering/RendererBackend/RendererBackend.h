@@ -38,6 +38,8 @@ namespace PineEngine {
         void prepareShadersForRendering(uint32_t id);
         void deleteShaders(uint32_t id);
 
+        void setUniform(uint32_t shaderId, const std::string &name, const std::vector<float> &value);
+
         void drawTriangles(uint32_t vertexCount);
 
     private:
