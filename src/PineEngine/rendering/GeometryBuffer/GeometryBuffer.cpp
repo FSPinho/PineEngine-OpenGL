@@ -1,5 +1,3 @@
-#pragma once
-
 #include "GeometryBuffer.h"
 #include <cassert>
 #include <stdexcept>

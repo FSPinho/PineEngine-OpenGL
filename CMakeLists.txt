@@ -70,8 +70,10 @@ target_include_directories(
 )
 target_compile_options(
         PineEngine PRIVATE
-        "/FI${CMAKE_SOURCE_DIR}/src/PineEngine/Config/Config.h"
-        "/FI${CMAKE_SOURCE_DIR}/src/PineEngine/Util/Log/Log.h"
+        $<$<CXX_COMPILER_ID:MSVC>:/FI${CMAKE_SOURCE_DIR}/src/PineEngine/config/Config.h>
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-include${CMAKE_SOURCE_DIR}/src/PineEngine/config/Config.h>
+        $<$<CXX_COMPILER_ID:MSVC>:/FI${CMAKE_SOURCE_DIR}/src/PineEngine/util/Log/Log.h>
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-include${CMAKE_SOURCE_DIR}/src/PineEngine/util/Log/Log.h>
 )
 
 # --------------------
