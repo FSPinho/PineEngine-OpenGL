@@ -3,9 +3,12 @@ project(PineEngine)
 
 set(CMAKE_CXX_STANDARD 20)
 
+enable_testing()
+
 find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
+find_package(Catch2 CONFIG REQUIRED)
 
 add_library(
         PineEngine
@@ -32,8 +35,17 @@ add_library(
         src/PineEngine/rendering/GeometryBuffer/GeometryBuffer.cpp
         src/PineEngine/rendering/ShaderSet/ShaderSet.h
         src/PineEngine/rendering/ShaderSet/ShaderSet.cpp
+        src/PineEngine/rendering/Mesh/Mesh.h
+        src/PineEngine/rendering/Mesh/Mesh.cpp
         src/PineEngine/rendering/Timer/Timer.h
         src/PineEngine/rendering/Timer/Timer.cpp
+
+        src/PineEngine/application/Application/Application.h
+        src/PineEngine/application/Application/Application.cpp
+        src/PineEngine/application/Scene/Scene.h
+        src/PineEngine/application/Scene/Scene.cpp
+        src/PineEngine/application/Object/Object.h
+        src/PineEngine/application/Object/Object.cpp
 
         src/PineEngine/Util/Log/Log.h
         src/PineEngine/Util/SerialID/SerialID.h
@@ -43,6 +55,8 @@ add_library(
         src/PineEngine/Util/File/File.cpp
         src/PineEngine/Util/FileWatch/FileWatch.h
         src/PineEngine/Util/FileWatch/FileWatch.cpp
+        src/PineEngine/Util/Transform/Transform.h
+        src/PineEngine/Util/Transform/Transform.cpp
 )
 target_link_libraries(
         PineEngine PUBLIC
@@ -60,8 +74,23 @@ target_compile_options(
         "/FI${CMAKE_SOURCE_DIR}/src/PineEngine/Util/Log/Log.h"
 )
 
+# --------------------
+# Examples
+
 add_executable(Examples_Basic examples/Basic/main.cpp)
 target_link_libraries(
         Examples_Basic PRIVATE
         PineEngine
 )
+
+# --------------------
+# Tests
+
+add_executable(
+        Tests
+        tests/test_ResourceManager.cpp
+)
+target_link_libraries(Tests PRIVATE PineEngine Catch2::Catch2WithMain)
+include(CTest)
+include(Catch)
+catch_discover_tests(Tests)

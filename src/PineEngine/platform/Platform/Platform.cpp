@@ -15,6 +15,10 @@ namespace PineEngine {
         LOG_DESTRUCTOR("Platform");
     }
 
+    void Platform::addResizeListener(std::function<void(uint32_t, uint32_t)> &&listener) {
+        this->resizeListeners.emplace_back(std::move(listener));
+    }
+
     void Platform::mainLoop(const std::function<void()> &tick) const {
         while (!glfwWindowShouldClose(this->window)) {
             tick();
@@ -63,17 +67,28 @@ namespace PineEngine {
             throw std::runtime_error("Failed to initialize window!");
         }
         glfwMakeContextCurrent(this->window);
+        glfwSetWindowUserPointer(this->window, this);
         glfwSetFramebufferSizeCallback(
             this->window,
             [](GLFWwindow *window, const int width, const int height) {
-                LOG("Window resized to width=" << width << ", height=" << height);
-                // ... TODO
+                const auto p = static_cast<Platform *>(glfwGetWindowUserPointer(window));
+                p->_notifyResizeListeners();
             }
         );
+        this->_notifyResizeListeners();
     }
 
     void Platform::_destroyWindow() {
         glfwDestroyWindow(this->window);
         glfwTerminate();
+    }
+
+    void Platform::_notifyResizeListeners() {
+        int width;
+        int height;
+        glfwGetWindowSize(this->window, &width, &height);
+        for (const auto &listener: this->resizeListeners) {
+            listener(width, height);
+        }
     }
 }

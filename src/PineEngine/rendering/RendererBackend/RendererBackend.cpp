@@ -1,12 +1,13 @@
 #include "RendererBackend.h"
+
 #include <string>
 #include <stdexcept>
+#include <glm/gtc/type_ptr.hpp>
 
 
 namespace PineEngine {
     RendererBackend::RendererBackend(Platform &platform) : platform(platform) {
         this->_initializeOpenGLContext();
-        this->_initializeViewport();
 
         LOG_CONSTRUCTOR("RendererBackend");
     }
@@ -17,7 +18,7 @@ namespace PineEngine {
 
     void RendererBackend::clearFrame() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void RendererBackend::swapBuffers() {
@@ -227,7 +228,23 @@ namespace PineEngine {
         }
 
         this->_debugMethod("Set uniform", true);
+    }
 
+    void RendererBackend::setUniform(
+        const uint32_t shaderId,
+        const std::string &name,
+        const glm::mat4 &value
+    ) {
+        const uint32_t uniformLocation = this->_getUniformLocation(shaderId, name);
+
+        glUseProgram(shaderId);
+        glUniformMatrix4fv(
+            static_cast<GLint>(uniformLocation),
+            1, GL_FALSE,
+            glm::value_ptr(value)
+        );
+
+        this->_debugMethod("Set uniform", true);
     }
 
     void RendererBackend::drawTriangles(const uint32_t vertexCount) {
@@ -245,10 +262,12 @@ namespace PineEngine {
         if (!gladLoadGLLoader(this->platform.getOpenGLProcAddress())) {
             throw std::runtime_error("Failed to initialize OpenGL context!");
         }
-    }
 
-    void RendererBackend::_initializeViewport() {
-        glViewport(0, 0, CONFIG::WINDOW_WIDTH, CONFIG::WINDOW_HEIGHT);
+        this->platform.addResizeListener([](const uint32_t width, const uint32_t height) {
+            glViewport(0, 0, width, height);
+        });
+
+        glEnable(GL_DEPTH_TEST);
     }
 
     uint32_t RendererBackend::_loadShader(const std::string &shaderCode, const uint32_t shaderType) {

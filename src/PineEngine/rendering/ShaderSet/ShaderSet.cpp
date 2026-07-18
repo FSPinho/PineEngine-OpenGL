@@ -22,7 +22,15 @@ namespace PineEngine {
     }
 
     void ShaderSet::setUniform(const std::string &name, const std::vector<float> &value) {
-        this->uniforms.emplace(name, value);
+        this->floatUniforms.emplace(name, value);
+
+        if (this->areShadersLoaded) {
+            this->backend.setUniform(this->shadersId, name, value);
+        }
+    }
+
+    void ShaderSet::setUniform(const std::string &name, const glm::mat4 &value) {
+        this->matrixUniforms.emplace(name, value);
 
         if (this->areShadersLoaded) {
             this->backend.setUniform(this->shadersId, name, value);
@@ -51,7 +59,7 @@ namespace PineEngine {
             fragmentShaderCode
         );
 
-        for (const auto &[name, value]: this->uniforms) {
+        for (const auto &[name, value]: this->floatUniforms) {
             this->backend.setUniform(this->shadersId, name, value);
         }
 

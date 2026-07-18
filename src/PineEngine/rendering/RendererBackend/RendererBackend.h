@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <glm/glm.hpp>
 #include <PineEngine/platform/Platform/Platform.h>
 
 
@@ -44,6 +45,7 @@ namespace PineEngine {
         void deleteShaders(uint32_t id);
 
         void setUniform(uint32_t shaderId, const std::string &name, const std::vector<float> &value);
+        void setUniform(uint32_t shaderId, const std::string &name, const glm::mat4 &value);
 
         void drawTriangles(uint32_t vertexCount);
 
@@ -51,7 +53,6 @@ namespace PineEngine {
         Platform &platform;
 
         void _initializeOpenGLContext();
-        void _initializeViewport();
         uint32_t _loadShader(const std::string &shaderCode, uint32_t shaderType);
         uint32_t _getUniformLocation(uint32_t shaderId, const std::string &name);
         void _debugMethod(std::string_view label, bool errorsOnly = false);

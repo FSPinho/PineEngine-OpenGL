@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <memory>
 #include <PineEngine/rendering/RendererComponent/RendererComponent.h>
 #include <PineEngine/rendering/RendererBackend/RendererBackend.h>
 
@@ -14,16 +13,15 @@ namespace PineEngine {
 
         void process();
 
-        template<typename T, typename... Args>
-        T &addComponent(Args &&... args) {
-            static_assert(std::is_base_of_v<RendererComponent, T>);
-            this->components.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
-            return static_cast<T &>(*this->components.back());
+        template<typename C>
+        void addComponent(C &component) {
+            static_assert(std::is_base_of_v<RendererComponent, C>);
+            this->components.push_back(component);
         }
 
-        template<typename T>
-        void removeComponent(T &component) {
-            static_assert(std::is_base_of_v<RendererComponent, T>);
+        template<typename C>
+        void removeComponent(C &component) {
+            static_assert(std::is_base_of_v<RendererComponent, C>);
             auto it = std::find_if(this->components.begin(), this->components.end(), [&component](const auto &c) {
                 return c.get() == component;
             });
@@ -32,6 +30,6 @@ namespace PineEngine {
 
     private:
         RendererBackend &context;
-        std::vector<std::unique_ptr<RendererComponent> > components;
+        std::vector<std::reference_wrapper<RendererComponent> > components;
     };
 }

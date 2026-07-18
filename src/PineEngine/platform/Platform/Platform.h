@@ -16,6 +16,8 @@ namespace PineEngine {
         Platform();
         ~Platform();
 
+        void addResizeListener(std::function<void(uint32_t, uint32_t)> &&listener);
+
         void mainLoop(const std::function<void()> &tick) const;
 
         GLADloadproc getOpenGLProcAddress();
@@ -30,5 +32,8 @@ namespace PineEngine {
         GLFWwindow *window = nullptr;
         void _initializeWindow();
         void _destroyWindow();
+
+        std::vector<std::function<void(uint32_t, uint32_t)> > resizeListeners;
+        void _notifyResizeListeners();
     };
 }

@@ -12,7 +12,7 @@ namespace PineEngine {
 
     void Renderer::process() {
         for (const auto &component: this->components) {
-            component->process();
+            component.get().process();
         }
     }
 }
