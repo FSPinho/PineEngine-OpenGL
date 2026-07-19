@@ -1,23 +1,24 @@
 #pragma once
 
 #include <string>
-
+#include <PineEngine/util/Path/Path.h>
 
 namespace PineEngine {
-    class Resource {
-        friend class ResourceManager;
+class Resource {
+  public:
+    explicit Resource(const Path &path);
+    virtual ~Resource();
 
-    protected:
-        explicit Resource(std::string key);
-        virtual ~Resource();
+    virtual void load();
+    virtual void unload();
 
-    private:
-        std::string key;
+    const Path &getPath();
 
-        virtual void load() = 0;
-        virtual void unload() = 0;
+  protected:
+    virtual void performLoad() = 0;
+    virtual void performUnload() = 0;
 
-        void requestLoad();
-        void requestUnload();
-    };
-}
+  private:
+    Path path;
+};
+} // namespace PineEngine

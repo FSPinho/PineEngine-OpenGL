@@ -5,3 +5,12 @@ BreakBeforeBraces: Attach
 AllowShortFunctionsOnASingleLine: Inline
 EmptyLineBeforeAccessModifier: Always
 EmptyLineAfterAccessModifier: Never
+
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<'
+    Priority: 1
+  - Regex: '^<PineEngine/'
+    Priority: 2
+  - Regex: '^"'
+    Priority: 3

@@ -1,6 +1,3 @@
 #include "ResourceManager.h"
 
-
-namespace PineEngine {
-
-}
+namespace PineEngine {}

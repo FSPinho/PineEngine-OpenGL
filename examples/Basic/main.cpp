@@ -12,10 +12,13 @@
 #include <PineEngine/rendering/ShaderSet/ShaderSet.h>
 #include <PineEngine/rendering/Timer/Timer.h>
 #include <PineEngine/util/Time/Time.h>
+#include <PineEngine/application/Application/Application.h>
 
 
 int main() {
     try {
+        PineEngine::Application application;
+
         // PineEngine::Platform platform;
         // PineEngine::InputManager inputManager(platform);
         //

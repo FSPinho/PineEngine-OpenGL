@@ -2,19 +2,18 @@
 
 #include <string>
 
-
 namespace PineEngine {
-    class FileWatch {
-    public:
-        explicit FileWatch(std::string path_);
+class FileWatch {
+  public:
+    explicit FileWatch(std::string path_);
 
-        bool hasChanged();
+    bool hasChanged();
 
-    private:
-        std::string path;
-        double lastCheckTime = 0.0f;
-        double lastNotifiedChangeTime = 0.0f;
+  private:
+    std::string path;
+    double lastCheckTime = 0.0f;
+    double lastNotifiedChangeTime = 0.0f;
 
-        double _getLastChangeTime();
-    };
-}
+    double _getLastChangeTime();
+};
+} // namespace PineEngine

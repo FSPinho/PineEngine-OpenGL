@@ -1,6 +1,5 @@
 #include "SerialID.h"
 
-
 namespace PineEngine {
-    ID SerialID::lastGeneratedId = 0;
+ID SerialID::lastGeneratedId = 0;
 }

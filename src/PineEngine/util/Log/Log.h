@@ -1,10 +1,10 @@
 #pragma once
 
+#include <format>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <iomanip>
-#include <format>
 
 #ifdef NDEBUG
 #define LOG(...)
@@ -19,44 +19,40 @@
 #define FORMAT(...) std::format(__VA_ARGS__)
 
 namespace PineEngine {
-    class LogStream {
-    public:
-        LogStream &operator<<(std::string const &value) {
-            this->buffer += value;
-            return *this;
-        }
+class LogStream {
+  public:
+    LogStream &operator<<(std::string const &value) {
+        this->buffer += value;
+        return *this;
+    }
 
-        LogStream &operator<<(char const *value) {
-            this->buffer += value;
-            return *this;
-        }
+    LogStream &operator<<(char const *value) {
+        this->buffer += value;
+        return *this;
+    }
 
-        LogStream &operator<<(int const value) {
-            this->buffer += std::to_string(value);
-            return *this;
-        }
+    LogStream &operator<<(int const value) {
+        this->buffer += std::to_string(value);
+        return *this;
+    }
 
-        template<typename T>
-            requires std::floating_point<T>
-        LogStream &operator<<(T const value) {
-            std::ostringstream ss;
-            ss << std::fixed << std::setprecision(4) << value;
-            this->buffer += ss.str();
-            return *this;
-        }
+    template <typename T>
+        requires std::floating_point<T>
+    LogStream &operator<<(T const value) {
+        std::ostringstream ss;
+        ss << std::fixed << std::setprecision(4) << value;
+        this->buffer += ss.str();
+        return *this;
+    }
 
-        ~LogStream() {
-            std::cout << this->buffer << std::endl;
-        }
+    ~LogStream() { std::cout << this->buffer << std::endl; }
 
-    private:
-        std::string buffer;
-    };
+  private:
+    std::string buffer;
+};
 
-    class Log {
-    public:
-        static LogStream i() {
-            return LogStream{};
-        }
-    };
-}
+class Log {
+  public:
+    static LogStream i() { return LogStream{}; }
+};
+} // namespace PineEngine

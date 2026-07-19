@@ -57,6 +57,13 @@ add_library(
         src/PineEngine/Util/FileWatch/FileWatch.cpp
         src/PineEngine/Util/Transform/Transform.h
         src/PineEngine/Util/Transform/Transform.cpp
+        src/PineEngine/Util/Path/Path.h
+        src/PineEngine/Util/Path/Path.cpp
+        src/PineEngine/Util/Resource/Resource.h
+        src/PineEngine/Util/Resource/Resource.cpp
+        src/PineEngine/Util/ResourceHandler/ResourceHandler.h
+        src/PineEngine/Util/ResourceManager/ResourceManager.h
+        src/PineEngine/Util/ResourceManager/ResourceManager.cpp
 )
 target_link_libraries(
         PineEngine PUBLIC
@@ -88,11 +95,13 @@ target_link_libraries(
 # --------------------
 # Tests
 
-add_executable(
-        Tests
-        tests/test_ResourceManager.cpp
-)
-target_link_libraries(Tests PRIVATE PineEngine Catch2::Catch2WithMain)
+add_executable(Tests_ResourceManager tests/test_ResourceManager.cpp)
+add_executable(Tests_Path tests/test_Path.cpp)
+target_link_libraries(Tests_ResourceManager PRIVATE PineEngine Catch2::Catch2WithMain)
+target_link_libraries(Tests_Path PRIVATE PineEngine Catch2::Catch2WithMain)
+
 include(CTest)
 include(Catch)
-catch_discover_tests(Tests)
+
+catch_discover_tests(Tests_ResourceManager)
+catch_discover_tests(Tests_Path)

@@ -2,15 +2,14 @@
 
 #include <string>
 
-
 namespace PineEngine {
-    class File {
-    public:
-        explicit File(std::string path_);
+class File {
+  public:
+    explicit File(std::string path_);
 
-        std::string readAsText();
+    std::string readAsText();
 
-    private:
-        std::string path;
-    };
-}
+  private:
+    std::string path;
+};
+} // namespace PineEngine

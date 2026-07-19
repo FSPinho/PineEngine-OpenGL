@@ -1,26 +1,24 @@
 #pragma once
 
-#include <PineEngine/util/SerialID/SerialID.h>
 #include <PineEngine/rendering/RendererBackend/RendererBackend.h>
-
+#include <PineEngine/util/SerialID/SerialID.h>
 
 namespace PineEngine {
-    class RendererComponent {
-        friend class Renderer;
+class RendererComponent {
+    friend class Renderer;
 
-    public:
-        explicit RendererComponent(RendererBackend &backend);
+  public:
+    explicit RendererComponent(RendererBackend &backend);
 
-        virtual ~RendererComponent() = default;
+    virtual ~RendererComponent() = default;
 
-        bool operator==(const RendererComponent &other) const;
+    bool operator==(const RendererComponent &other) const;
 
-    protected:
-        RendererBackend &backend;
-        virtual void process() = 0;
+  protected:
+    RendererBackend &backend;
+    virtual void process() = 0;
 
-
-    private:
-        ID id;
-    };
-}
+  private:
+    ID id;
+};
+} // namespace PineEngine
