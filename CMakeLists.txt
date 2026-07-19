@@ -38,6 +38,8 @@ add_library(
         src/PineEngine/application/Scene/Scene.cpp
         src/PineEngine/application/Object/Object.h
         src/PineEngine/application/Object/Object.cpp
+        src/PineEngine/application/Camera/Camera.h
+        src/PineEngine/application/Camera/Camera.cpp
 
         src/PineEngine/Util/Log/Log.h
         src/PineEngine/Util/SerialID/SerialID.h

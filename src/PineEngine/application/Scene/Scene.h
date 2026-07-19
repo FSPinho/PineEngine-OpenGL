@@ -1,5 +1,6 @@
 #pragma once
 
+#include <PineEngine/application/Camera/Camera.h>
 #include <PineEngine/application/Object/Object.h>
 #include <PineEngine/util/Resource/Resource.h>
 #include <PineEngine/util/ResourceHandler/ResourceHandler.h>
@@ -14,7 +15,7 @@ class Scene : public Resource {
     void addChild(ResourceHandler<Scene> &&child);
     void addChild(ResourceHandler<Object> &&child);
 
-    void performRendering();
+    void performRendering(const double &time, const Camera &camera);
 
   protected:
     void performLoad() override;

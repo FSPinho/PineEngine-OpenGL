@@ -16,6 +16,7 @@ Platform::~Platform() {
 
 void Platform::addResizeListener(std::function<void(uint32_t, uint32_t)> &&listener) {
     this->resizeListeners.emplace_back(std::move(listener));
+    this->_notifyResizeListeners();
 }
 
 void Platform::mainLoop(const std::function<void()> &tick) const {
@@ -29,7 +30,7 @@ GLADloadproc Platform::getOpenGLProcAddress() {
     return reinterpret_cast<GLADloadproc>(glfwGetProcAddress);
 }
 
-bool Platform::isKeyPressed(const InputKey key) {
+bool Platform::isKeyPressed(const InputKey key) const {
     static std::unordered_map<InputKey, int> keyMap = {{InputKey::ESCAPE, GLFW_KEY_ESCAPE}};
 
     if (!keyMap.contains(key)) {
@@ -40,11 +41,11 @@ bool Platform::isKeyPressed(const InputKey key) {
     return glfwGetKey(this->window, key_) == GLFW_PRESS;
 }
 
-void Platform::swapBuffers() {
+void Platform::swapBuffers() const {
     glfwSwapBuffers(this->window);
 }
 
-void Platform::requestStop() {
+void Platform::requestStop() const {
     glfwSetWindowShouldClose(this->window, true);
 }
 

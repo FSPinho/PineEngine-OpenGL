@@ -55,7 +55,9 @@ void RendererBackend::allocateDataBuffer(uint32_t id, uint32_t sizeInBytes) {
     this->_debugMethod(FORMAT("Allocated data buffer {} with {} bytes", id, sizeInBytes));
 }
 
-void RendererBackend::populateDataBuffer(const uint32_t id, const void *data, const uint32_t offsetInBytes,
+void RendererBackend::populateDataBuffer(const uint32_t id,
+                                         const void *data,
+                                         const uint32_t offsetInBytes,
                                          const uint32_t sizeInBytes) {
     glBindBuffer(GL_ARRAY_BUFFER, id);
     glBufferSubData(GL_ARRAY_BUFFER, offsetInBytes, sizeInBytes, data);
@@ -70,7 +72,9 @@ void RendererBackend::allocateIndexDataBuffer(const uint32_t id, uint32_t sizeIn
     this->_debugMethod(FORMAT("Allocated index data buffer {} with {} bytes", id, sizeInBytes));
 }
 
-void RendererBackend::populateIndexDataBuffer(uint32_t id, const void *data, uint32_t offsetInBytes,
+void RendererBackend::populateIndexDataBuffer(uint32_t id,
+                                              const void *data,
+                                              uint32_t offsetInBytes,
                                               uint32_t sizeInBytes) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offsetInBytes, sizeInBytes, data);
@@ -84,17 +88,29 @@ void RendererBackend::deleteDataBuffer(const uint32_t id) {
     this->_debugMethod(FORMAT("Deleted data buffer {}", id));
 }
 
-void RendererBackend::bindDataBufferToGeometry(const uint32_t geometryId, const uint32_t dataBufferId,
-                                               const uint32_t attributeIndex, const uint32_t dimensionality,
-                                               const uint32_t combinedDimensionality, const uint32_t dataOffset) {
+void RendererBackend::bindDataBufferToGeometry(const uint32_t geometryId,
+                                               const uint32_t dataBufferId,
+                                               const uint32_t attributeIndex,
+                                               const uint32_t dimensionality,
+                                               const uint32_t combinedDimensionality,
+                                               const uint32_t dataOffset) {
     glBindVertexArray(geometryId);
     glBindBuffer(GL_ARRAY_BUFFER, dataBufferId);
-    glVertexAttribPointer(attributeIndex, dimensionality, GL_FLOAT, GL_FALSE, combinedDimensionality * sizeof(float),
+    glVertexAttribPointer(attributeIndex,
+                          dimensionality,
+                          GL_FLOAT,
+                          GL_FALSE,
+                          combinedDimensionality * sizeof(float),
                           reinterpret_cast<void *>(dataOffset * sizeof(float)));
     glEnableVertexAttribArray(attributeIndex);
 
-    this->_debugMethod(FORMAT("Bound data buffer {} to geometry {}, attr={}, dim={}, cdim={}, offset={}", dataBufferId,
-                              geometryId, attributeIndex, dimensionality, combinedDimensionality, dataOffset));
+    this->_debugMethod(FORMAT("Bound data buffer {} to geometry {}, attr={}, dim={}, cdim={}, offset={}",
+                              dataBufferId,
+                              geometryId,
+                              attributeIndex,
+                              dimensionality,
+                              combinedDimensionality,
+                              dataOffset));
 }
 
 void RendererBackend::bindIndexDataBufferToGeometry(const uint32_t geometryId, const uint32_t dataBufferId) {
@@ -176,8 +192,9 @@ void RendererBackend::_initializeOpenGLContext() {
         throw std::runtime_error("Failed to initialize OpenGL context!");
     }
 
-    this->platform.addResizeListener(
-        [](const uint32_t width, const uint32_t height) { glViewport(0, 0, width, height); });
+    this->platform.addResizeListener([](const uint32_t width, const uint32_t height) {
+        glViewport(0, 0, width, height);
+    });
 
     glEnable(GL_DEPTH_TEST);
 }

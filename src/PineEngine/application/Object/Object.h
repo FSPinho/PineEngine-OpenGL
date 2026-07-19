@@ -1,5 +1,6 @@
 #pragma once
 
+#include <PineEngine/application/Camera/Camera.h>
 #include <PineEngine/rendering/GeometryBuffer/GeometryBuffer.h>
 #include <PineEngine/rendering/ShaderSet/ShaderSet.h>
 #include <PineEngine/util/Path/Path.h>
@@ -14,14 +15,10 @@ class Object : public Resource {
     explicit Object(const Path &path);
     ~Object() override;
 
-    void setGeometry(ResourceHandler<GeometryBuffer> &&geometry_) {
-        this->geometry = std::move(geometry_);
-    }
-    void setGeometry(ResourceHandler<ShaderSet> &&shaderSet_) {
-        this->shaderSet = std::move(shaderSet);
-    }
+    void setGeometry(ResourceHandler<GeometryBuffer> &&geometry_) { this->geometry = std::move(geometry_); }
+    void setShaderSet(ResourceHandler<ShaderSet> &&shaderSet_) { this->shaderSet = std::move(shaderSet_); }
 
-    void performRendering();
+    void performRendering(const double &time, const Camera &camera);
 
   protected:
     void performLoad() override;

@@ -14,8 +14,10 @@ int main() {
         auto box = ResourceManager::load<GeometryBuffer>(Path::inMemory("geometry/1"),
                                                          GeometryPreset::BOX,
                                                          application.getRendererBackend());
+        auto shader = ResourceManager::load<ShaderSet>(Path::inDisk("shaders"), application.getRendererBackend());
         auto object = ResourceManager::load<Object>(Path::inMemory("objects/1"));
         object->setGeometry(std::move(box));
+        object->setShaderSet(std::move(shader));
         application.getRootScene()->addChild(std::move(object));
 
         application.mainLoop();

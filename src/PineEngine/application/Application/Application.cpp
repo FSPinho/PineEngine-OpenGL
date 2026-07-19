@@ -6,6 +6,10 @@ namespace PineEngine {
 Application::Application()
     : rendererBackend(this->platform), renderer(this->rendererBackend), inputManager(this->platform) {
     LOG_CONSTRUCTOR("Application");
+
+    this->platform.addResizeListener([this](const uint32_t width, const uint32_t height) {
+        this->camera.setAspect(static_cast<float>(width) / static_cast<float>(height));
+    });
 }
 
 Application::~Application() {
@@ -15,7 +19,7 @@ Application::~Application() {
 void Application::mainLoop() {
     this->platform.mainLoop([this] {
         this->renderer.startFrame();
-        this->rootScene->performRendering();
+        this->rootScene->performRendering(this->timer.getElapsed(), this->camera);
         this->renderer.commitFrame();
 
         if (this->inputManager.isKeyPressed(InputKey::ESCAPE)) {

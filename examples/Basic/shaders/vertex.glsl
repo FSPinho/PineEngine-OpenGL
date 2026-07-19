@@ -1,15 +1,20 @@
 #version 330 core
 layout (location = 0) in vec3 vertexInPosition;
-layout (location = 1) in vec4 vertexInColor;
+layout (location = 1) in vec3 vertexInNormal;
 
 out vec4 vertexOutColor;
+out vec4 vertexOutNormal;
 
-uniform float TIME;
-uniform mat4 TRANSFORM;
+uniform mat4 MODEL_MATRIX;
+uniform mat4 VIEW_MATRIX;
+uniform mat4 PROJECTION_MATRIX;
 
 void main() {
-    vec3 offset = vec3(0.0f, sin(TIME * 2.0) * 0.2, 0.0f);
-    vec4 position = TRANSFORM * vec4(vertexInPosition + offset, 1.0);
-    gl_Position = position;
-    vertexOutColor = vertexInColor;
+    vec4 position = vec4(vertexInPosition, 1.0);
+    vec4 normal = vec4(vertexInNormal, 0.0);
+
+    vertexOutColor = position;
+    vertexOutNormal = normal;
+
+    gl_Position = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * position;
 }

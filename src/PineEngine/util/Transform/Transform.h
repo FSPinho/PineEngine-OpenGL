@@ -8,6 +8,8 @@ class Transform {
   public:
     Transform();
 
+    void setRotationQuaternion(const glm::quat &rotation_);
+
     const glm::mat4 &getMatrix();
 
   private:
@@ -17,4 +19,4 @@ class Transform {
 
     glm::mat4 transform;
 };
-}
+} // namespace PineEngine

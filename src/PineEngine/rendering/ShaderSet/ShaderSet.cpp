@@ -10,16 +10,15 @@ ShaderSet::ShaderSet(const Path &path, RendererBackend &backend)
 
 ShaderSet::~ShaderSet() {
     LOG_DESTRUCTOR("ShaderSet");
-    this->_unloadShaders();
 }
 
 void ShaderSet::setUniform(const std::string &name, const std::vector<float> &value) {
-    this->floatUniforms.emplace(name, value);
+    this->floatUniforms.insert_or_assign(name, value);
     this->_setUniforms();
 }
 
 void ShaderSet::setUniform(const std::string &name, const glm::mat4 &value) {
-    this->matrixUniforms.emplace(name, value);
+    this->matrixUniforms.insert_or_assign(name, value);
     this->_setUniforms();
 }
 
@@ -51,6 +50,9 @@ void ShaderSet::_unloadShaders() {
 void ShaderSet::_setUniforms() {
     if (this->areShadersLoaded) {
         for (const auto &[name, value] : this->floatUniforms) {
+            this->backend.setUniform(this->shadersId, name, value);
+        }
+        for (const auto &[name, value] : this->matrixUniforms) {
             this->backend.setUniform(this->shadersId, name, value);
         }
     }

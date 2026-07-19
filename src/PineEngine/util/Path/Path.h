@@ -12,7 +12,6 @@ class Path {
     std::string asString(bool includePrefix = true) const;
     std::string asAbsolutePathString() const;
 
-
     bool operator==(const std::string &other) const;
     Path operator/(const std::string &other) const;
 
@@ -20,7 +19,7 @@ class Path {
     static Path inDisk(const std::string &path);
 
     inline static std::string inDiskRootFolder = "";
-    static void setInDiskRootFolder(std::string);
+    static void setInDiskRootFolder(const std::string &path);
 
   private:
     std::string prefix;

@@ -43,7 +43,9 @@ Path Path::inDisk(const std::string &path) {
     return std::move(Path(std::string(CONFIG::IN_DISK_RESOURCE_PREFIX) + "/" + path));
 }
 
-void Path::setInDiskRootFolder(std::string) {}
+void Path::setInDiskRootFolder(const std::string &path) {
+    inDiskRootFolder = path;
+}
 
 void Path::_initializeParts(const std::string &path) {
     std::string part = "";

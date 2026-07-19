@@ -23,11 +23,11 @@ class Platform {
 
     GLADloadproc getOpenGLProcAddress();
 
-    bool isKeyPressed(InputKey key);
+    bool isKeyPressed(InputKey key) const;
 
-    void swapBuffers();
+    void swapBuffers() const;
 
-    void requestStop();
+    void requestStop() const;
 
   private:
     GLFWwindow *window = nullptr;
