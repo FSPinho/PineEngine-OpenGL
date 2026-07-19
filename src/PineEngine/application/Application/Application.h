@@ -1,6 +1,10 @@
 #pragma once
 
 #include <PineEngine/application/Scene/Scene.h>
+#include <PineEngine/platform/InputManager/InputManager.h>
+#include <PineEngine/platform/Platform/Platform.h>
+#include <PineEngine/rendering/Renderer/Renderer.h>
+#include <PineEngine/rendering/RendererBackend/RendererBackend.h>
 #include <PineEngine/util/Path/Path.h>
 #include <PineEngine/util/ResourceHandler/ResourceHandler.h>
 #include <PineEngine/util/ResourceManager/ResourceManager.h>
@@ -11,7 +15,17 @@ class Application {
     explicit Application();
     ~Application();
 
+    void mainLoop();
+
+    RendererBackend &getRendererBackend();
+    ResourceHandler<Scene> &getRootScene();
+
   private:
+    Platform platform;
+    RendererBackend rendererBackend;
+    Renderer renderer;
+    InputManager inputManager;
+
     ResourceHandler<Scene> rootScene = ResourceManager::load<Scene>(Path::inMemory("scenes/_root"));
 };
 } // namespace PineEngine

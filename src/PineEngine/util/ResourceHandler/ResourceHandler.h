@@ -6,7 +6,8 @@
 namespace PineEngine {
 template <typename R> class ResourceHandler {
   public:
-    explicit ResourceHandler(R *resource) : resource(resource) {}
+    explicit ResourceHandler(R *resource) : resource(resource) {
+    }
 
     // Block copy
     ResourceHandler(const ResourceHandler &) = delete;

@@ -5,7 +5,7 @@
 #include <filesystem>
 
 namespace PineEngine {
-FileWatch::FileWatch(std::string path_) : path(std::move(path_)) {}
+FileWatch::FileWatch(const Path &path) : path(path) {}
 
 bool FileWatch::hasChanged() {
     auto now = Time::now();
@@ -23,7 +23,7 @@ bool FileWatch::hasChanged() {
 }
 
 double FileWatch::_getLastChangeTime() {
-    const auto t = std::filesystem::last_write_time(this->path).time_since_epoch();
+    const auto t = std::filesystem::last_write_time(this->path.asAbsolutePathString()).time_since_epoch();
     return std::chrono::duration<double>(t).count();
 }
 } // namespace PineEngine

@@ -6,6 +6,10 @@ AllowShortFunctionsOnASingleLine: Inline
 EmptyLineBeforeAccessModifier: Always
 EmptyLineAfterAccessModifier: Never
 
+BinPackArguments: false
+BinPackParameters: false
+AllowAllArgumentsOnNextLine: false
+
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '^<'

@@ -1,10 +1,9 @@
 #include "Timer.h"
+
 #include <PineEngine/util/Time/Time.h>
 
 namespace PineEngine {
-Timer::Timer(RendererBackend &backend)
-    : RendererComponent(backend), startTime(Time::now()), lastFPSNotificationTime(Time::now()),
-      frameSinceLastFPSNotification(0) {
+Timer::Timer() : startTime(Time::now()), lastFPSNotificationTime(Time::now()), frameSinceLastFPSNotification(0) {
     LOG_CONSTRUCTOR("Timer");
 }
 
@@ -12,7 +11,7 @@ Timer::~Timer() {
     LOG_DESTRUCTOR("Timer");
 }
 
-float Timer::getElapsed() {
+float Timer::getElapsed() const {
     return Time::now() - this->startTime;
 }
 
@@ -27,9 +26,5 @@ void Timer::trackFPS() {
         this->frameSinceLastFPSNotification = 0;
         this->lastFPSNotificationTime = now;
     }
-}
-
-void Timer::process() {
-    // ...
 }
 } // namespace PineEngine

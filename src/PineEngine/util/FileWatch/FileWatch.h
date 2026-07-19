@@ -1,16 +1,16 @@
 #pragma once
 
-#include <string>
+#include <PineEngine/util/Path/Path.h>
 
 namespace PineEngine {
 class FileWatch {
   public:
-    explicit FileWatch(std::string path_);
+    explicit FileWatch(const Path &path);
 
     bool hasChanged();
 
   private:
-    std::string path;
+    Path path;
     double lastCheckTime = 0.0f;
     double lastNotifiedChangeTime = 0.0f;
 

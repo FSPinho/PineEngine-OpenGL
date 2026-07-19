@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <iostream>
 
 namespace PineEngine {
 class ResourceManager {

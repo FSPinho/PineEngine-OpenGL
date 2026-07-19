@@ -27,18 +27,10 @@ add_library(
         src/PineEngine/rendering/RendererBackend/RendererBackend.cpp
         src/PineEngine/rendering/RendererComponent/RendererComponent.h
         src/PineEngine/rendering/RendererComponent/RendererComponent.cpp
-        src/PineEngine/rendering/FrameClearer/FrameClearer.h
-        src/PineEngine/rendering/FrameClearer/FrameClearer.cpp
-        src/PineEngine/rendering/FrameSwapper/FrameSwapper.h
-        src/PineEngine/rendering/FrameSwapper/FrameSwapper.cpp
         src/PineEngine/rendering/GeometryBuffer/GeometryBuffer.h
         src/PineEngine/rendering/GeometryBuffer/GeometryBuffer.cpp
         src/PineEngine/rendering/ShaderSet/ShaderSet.h
         src/PineEngine/rendering/ShaderSet/ShaderSet.cpp
-        src/PineEngine/rendering/Mesh/Mesh.h
-        src/PineEngine/rendering/Mesh/Mesh.cpp
-        src/PineEngine/rendering/Timer/Timer.h
-        src/PineEngine/rendering/Timer/Timer.cpp
 
         src/PineEngine/application/Application/Application.h
         src/PineEngine/application/Application/Application.cpp
@@ -51,6 +43,8 @@ add_library(
         src/PineEngine/Util/SerialID/SerialID.h
         src/PineEngine/Util/SerialID/SerialID.cpp
         src/PineEngine/Util/Time/Time.h
+        src/PineEngine/util/Timer/Timer.h
+        src/PineEngine/util/Timer/Timer.cpp
         src/PineEngine/Util/File/File.h
         src/PineEngine/Util/File/File.cpp
         src/PineEngine/Util/FileWatch/FileWatch.h
@@ -64,6 +58,8 @@ add_library(
         src/PineEngine/Util/ResourceHandler/ResourceHandler.h
         src/PineEngine/Util/ResourceManager/ResourceManager.h
         src/PineEngine/Util/ResourceManager/ResourceManager.cpp
+        src/PineEngine/Util/GeometryLoader/GeometryLoader.h
+        src/PineEngine/Util/GeometryLoader/GeometryLoader.cpp
 )
 target_link_libraries(
         PineEngine PUBLIC

@@ -1,15 +1,16 @@
 #pragma once
 
+#include <PineEngine/util/Path/Path.h>
 #include <string>
 
 namespace PineEngine {
 class File {
   public:
-    explicit File(std::string path_);
+    explicit File(const Path &path);
 
     std::string readAsText();
 
   private:
-    std::string path;
+    Path path;
 };
 } // namespace PineEngine

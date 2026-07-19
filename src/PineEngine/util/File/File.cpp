@@ -5,13 +5,14 @@
 #include <stdexcept>
 
 namespace PineEngine {
-File::File(std::string path_) : path(std::move(path_)) {}
+File::File(const Path& path) : path(path) {}
 
 std::string File::readAsText() {
-    const std::ifstream file(this->path);
+    const std::ifstream file(this->path.asAbsolutePathString());
 
-    if (!file)
-        throw std::runtime_error(FORMAT("Failed to load file {}", this->path));
+    if (!file) {
+        throw std::runtime_error(FORMAT("Failed to load file {}", this->path.asAbsolutePathString()));
+    }
 
     std::stringstream buffer;
     buffer << file.rdbuf();

@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
 namespace PineEngine {
-Renderer::Renderer(RendererBackend &context) : context(context) {
+Renderer::Renderer(RendererBackend &backend) : backend(backend) {
     LOG_CONSTRUCTOR("Renderer");
 }
 
@@ -9,9 +9,11 @@ Renderer::~Renderer() {
     LOG_DESTRUCTOR("Renderer");
 }
 
-void Renderer::process() {
-    for (const auto &component : this->components) {
-        component.get().process();
-    }
+void Renderer::startFrame() {
+    this->backend.clearFrame();
+}
+
+void Renderer::commitFrame() {
+    this->backend.swapBuffers();
 }
 } // namespace PineEngine

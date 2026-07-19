@@ -171,4 +171,21 @@ TEST_CASE("ResourceManager") {
         REQUIRE(TestResource::loadCallCount == 2);
         REQUIRE(TestResource::unloadCallCount == 2);
     }
+
+    SECTION("Moved handler correctly cleaned") {
+        {
+            auto handler1 = PineEngine::ResourceManager::load<TestResource>(PineEngine::Path("some/resource1"));
+            auto handler2 = std::move(handler1);
+            REQUIRE(PineEngine::ResourceManager::getResourceUsage(PineEngine::Path("some/resource1")) == 1);
+            REQUIRE(TestResource::constructorCallCount == 1);
+            REQUIRE(TestResource::destructorCallCount == 0);
+            REQUIRE(TestResource::loadCallCount == 1);
+            REQUIRE(TestResource::unloadCallCount == 0);
+        }
+        REQUIRE(PineEngine::ResourceManager::getResourceUsage(PineEngine::Path("some/resource1")) == 0);
+        REQUIRE(TestResource::constructorCallCount == 1);
+        REQUIRE(TestResource::destructorCallCount == 1);
+        REQUIRE(TestResource::loadCallCount == 1);
+        REQUIRE(TestResource::unloadCallCount == 1);
+    }
 }

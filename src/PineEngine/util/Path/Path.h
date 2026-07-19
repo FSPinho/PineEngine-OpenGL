@@ -9,12 +9,18 @@ class Path {
     explicit Path(const std::string &path);
 
     std::string getPrefix() const;
-    std::string asString() const;
+    std::string asString(bool includePrefix = true) const;
+    std::string asAbsolutePathString() const;
+
 
     bool operator==(const std::string &other) const;
+    Path operator/(const std::string &other) const;
 
     static Path inMemory(const std::string &path);
     static Path inDisk(const std::string &path);
+
+    inline static std::string inDiskRootFolder = "";
+    static void setInDiskRootFolder(std::string);
 
   private:
     std::string prefix;

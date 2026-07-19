@@ -1,38 +1,43 @@
 #include "GeometryBuffer.h"
-#include <cassert>
+
 #include <stdexcept>
+#include <string>
 
 namespace PineEngine {
-GeometryBuffer::GeometryBuffer(RendererBackend &backend, std::vector<VertexData> &&verticesData_,
-                               std::vector<uint32_t> &&indices_)
-    : RendererComponent(backend), verticesData(std::move(verticesData_)), indices(std::move(indices_)) {
+GeometryBuffer::GeometryBuffer(const Path &path, const GeometryPreset &preset, RendererBackend &backend)
+    : Resource(path), RendererComponent(backend), loader(preset) {
     LOG_CONSTRUCTOR("GeometryBuffer");
-
-    this->_validateGeometry();
-    this->_loadGeometry();
 }
 
 GeometryBuffer::~GeometryBuffer() {
     LOG_DESTRUCTOR("GeometryBuffer");
+}
+void GeometryBuffer::performRendering() {
+    this->backend.prepareGeometryForRendering(this->geometryId);
+    this->backend.drawTriangles(this->indicesCount);
+}
+void GeometryBuffer::performLoad() {
+    const auto verticesData = this->loader.getVerticesData();
+    const auto indices = this->loader.getIndices();
+    this->_validateGeometry(verticesData, indices);
+    this->_loadGeometry(verticesData, indices);
+}
+void GeometryBuffer::performUnload() {
     this->_unloadGeometry();
 }
 
-void GeometryBuffer::process() {
-    this->backend.prepareGeometryForRendering(this->geometryId);
-    this->backend.drawTriangles(this->indices.size());
-}
-
-void GeometryBuffer::_validateGeometry() {
-    if (this->verticesData.size() == 0) {
+void GeometryBuffer::_validateGeometry(const std::vector<VertexData> &verticesData,
+                                       const std::vector<uint32_t> &indices) {
+    if (verticesData.size() == 0) {
         throw std::runtime_error("Vertices data must have at least one attribute!");
     }
 
-    const uint32_t sizeRef = this->verticesData[0].data.size() / this->verticesData[0].dimensionality;
+    const uint32_t sizeRef = verticesData[0].data.size() / verticesData[0].dimensionality;
     if (sizeRef == 0) {
         throw std::runtime_error("Vertices data cannot be empty!");
     }
 
-    for (const auto &vertexData : this->verticesData) {
+    for (const auto &vertexData : verticesData) {
         if (vertexData.data.size() % vertexData.dimensionality != 0) {
             throw std::runtime_error(FORMAT("The size of the vertex data \"{}\" should be divisible by {}!",
                                             vertexData.name, vertexData.dimensionality));
@@ -44,7 +49,7 @@ void GeometryBuffer::_validateGeometry() {
     }
 }
 
-void GeometryBuffer::_loadGeometry() {
+void GeometryBuffer::_loadGeometry(const std::vector<VertexData> &verticesData, const std::vector<uint32_t> &indices) {
     this->geometryId = this->backend.createGeometry();
     this->verticesBufferId = this->backend.createDataBuffer();
     this->indicesBufferId = this->backend.createDataBuffer();
@@ -53,7 +58,7 @@ void GeometryBuffer::_loadGeometry() {
     uint32_t combinedVerticesDataSize = 0;
     uint32_t combinedVerticesDataSizeInBytes = 0;
     uint32_t combinedDimensionality = 0;
-    for (const auto vertexData : this->verticesData) {
+    for (const auto vertexData : verticesData) {
         combinedVerticesDataSize += vertexData.data.size();
         combinedVerticesDataSizeInBytes += vertexData.data.size() * sizeof(vertexData.data[0]);
         combinedDimensionality += vertexData.dimensionality;
@@ -64,7 +69,7 @@ void GeometryBuffer::_loadGeometry() {
     std::vector<float> combinedData(combinedVerticesDataSize);
     uint32_t combinedDataCursor = 0;
     for (uint32_t i = 0; i < combinedVerticesDataSize / combinedDimensionality; i++) {
-        for (const auto &vertexData : this->verticesData) {
+        for (const auto &vertexData : verticesData) {
             for (uint32_t di = 0; di < vertexData.dimensionality; di++) {
                 combinedData[combinedDataCursor] = vertexData.data[i * vertexData.dimensionality + di];
                 combinedDataCursor++;
@@ -77,16 +82,17 @@ void GeometryBuffer::_loadGeometry() {
 
     // Bind each attribute's buffer with the geometry
     uint32_t offset = 0;
-    for (uint32_t i = 0; i < this->verticesData.size(); i++) {
+    for (uint32_t i = 0; i < verticesData.size(); i++) {
         this->backend.bindDataBufferToGeometry(this->geometryId, this->verticesBufferId, i,
-                                               this->verticesData[i].dimensionality, combinedDimensionality, offset);
-        offset += this->verticesData[i].dimensionality;
+                                               verticesData[i].dimensionality, combinedDimensionality, offset);
+        offset += verticesData[i].dimensionality;
     }
 
     // Indices
-    this->backend.allocateIndexDataBuffer(this->indicesBufferId, this->indices.size() * sizeof(this->indices[0]));
-    this->backend.populateIndexDataBuffer(this->indicesBufferId, this->indices.data(), 0,
-                                          this->indices.size() * sizeof(this->indices[0]));
+    this->indicesCount = indices.size();
+    this->backend.allocateIndexDataBuffer(this->indicesBufferId, indices.size() * sizeof(indices[0]));
+    this->backend.populateIndexDataBuffer(this->indicesBufferId, indices.data(), 0,
+                                          indices.size() * sizeof(indices[0]));
     this->backend.bindIndexDataBufferToGeometry(this->geometryId, this->indicesBufferId);
     this->isGeometryLoaded = true;
 }

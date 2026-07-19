@@ -1,25 +1,26 @@
 #include "Object.h"
 
 namespace PineEngine {
-Object::Object(const Path &path) : Resource(path) {}
 
-// Transform &Object::getTransform() {
-//     return this->transform;
-// }
-//
-// ShaderSet *Object::getShader() {
-//     return this->shader;
-// }
-//
-// GeometryBuffer *Object::getGeometry() {
-//     return this->geometry;
-// }
-//
-// void Object::setShader(ShaderSet *shader_) {
-//     this->shader = shader_;
-// }
-//
-// void Object::setGeometry(GeometryBuffer *geometry_) {
-//     this->geometry = geometry_;
-// }
+Object::Object(const Path &path) : Resource(path) {
+    LOG_CONSTRUCTOR(FORMAT("Object[{}]", this->getPath().asString()));
+}
+
+Object::~Object() {
+    LOG_DESTRUCTOR(FORMAT("Object[{}]", this->getPath().asString()));
+}
+
+void Object::performRendering() {
+    if (this->geometry.has_value()) {
+        this->geometry.value()->performRendering();
+    }
+}
+
+void Object::performLoad() {}
+
+void Object::performUnload() {}
+
+Transform &Object::getTransform() {
+    return this->transform;
+}
 } // namespace PineEngine

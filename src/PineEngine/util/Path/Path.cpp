@@ -10,7 +10,7 @@ std::string Path::getPrefix() const {
     return this->prefix;
 }
 
-std::string Path::asString() const {
+std::string Path::asString(const bool includePrefix) const {
     std::string str;
     for (uint32_t i = 0; i < this->parts.size(); i++) {
         if (i > 0) {
@@ -18,13 +18,21 @@ std::string Path::asString() const {
         }
         str += this->parts[i];
     }
-    if (this->prefix.size()) {
+    if (includePrefix && this->prefix.size()) {
         str = this->prefix + '/' + str;
     }
     return std::move(str);
 }
+std::string Path::asAbsolutePathString() const {
+    return inDiskRootFolder + "/" + this->asString(false);
+}
+
 bool Path::operator==(const std::string &other) const {
     return this->asString() == other;
+}
+
+Path Path::operator/(const std::string &other) const {
+    return Path(this->asString() + "/" + other);
 }
 
 Path Path::inMemory(const std::string &path) {
@@ -34,6 +42,8 @@ Path Path::inMemory(const std::string &path) {
 Path Path::inDisk(const std::string &path) {
     return std::move(Path(std::string(CONFIG::IN_DISK_RESOURCE_PREFIX) + "/" + path));
 }
+
+void Path::setInDiskRootFolder(std::string) {}
 
 void Path::_initializeParts(const std::string &path) {
     std::string part = "";
