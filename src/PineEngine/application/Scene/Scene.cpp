@@ -1,32 +1,45 @@
 #include "Scene.h"
 
+#include "PineEngine/application/Application/Application.h"
+
 namespace PineEngine {
-Scene::Scene(const Path &path) : Resource(path) {
-    LOG_CONSTRUCTOR(FORMAT("Scene[{}]", this->getPath().asString()));
-}
-
-Scene::~Scene() {
-    LOG_DESTRUCTOR(FORMAT("Scene[{}]", this->getPath().asString()));
-}
-
-void Scene::addChild(ResourceHandler<Scene> &&child) {
-    this->childrenScenes.push_back(std::move(child));
-}
-
-void Scene::addChild(ResourceHandler<Object> &&child) {
-    this->childrenObjects.push_back(std::move(child));
-}
-void Scene::performRendering(const double &time, const Camera &camera) {
-    for (auto& object : this->childrenObjects) {
-        object->performRendering(time, camera);
+    Scene::Scene() : id(SerialID::generate()) {
+        LOG_CONSTRUCTOR(FORMAT("Scene[{}]", this->id));
     }
 
-    for (auto& scene : this->childrenScenes) {
-        scene->performRendering(time, camera);
+    Scene::~Scene() {
+        LOG_DESTRUCTOR(FORMAT("Scene[{}]", this->id));
     }
-}
 
-void Scene::performLoad() {}
+    void Scene::addChild(Scene &&child) {
+        if (this->parent != nullptr) {
+            this->parent->addChild(std::move(child));
+        } else {
+            this->allChildrenScenes.push_back(std::move(child));
+        }
+    }
 
-void Scene::performUnload() {}
+    void Scene::addChild(Object &&child) {
+        if (this->parent != nullptr) {
+            this->parent->addChild(std::move(child));
+        } else {
+            this->allChildrenObjects.push_back(child);
+        }
+    }
+
+    void Scene::addChild(PointLight &&child) {
+        if (this->parent != nullptr) {
+            this->parent->addChild(std::move(child));
+        } else {
+            this->allChildrenPointLights.push_back(child);
+        }
+    }
+
+    std::vector<Object> &Scene::getObjects() {
+        return this->allChildrenObjects;
+    }
+
+    std::vector<PointLight> &Scene::getPointLights() {
+        return this->allChildrenPointLights;
+    }
 } // namespace PineEngine

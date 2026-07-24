@@ -1,211 +1,62 @@
 #include "GeometryLoader.h"
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include <stdexcept>
+#include <string>
+#include <unordered_map>
 
 namespace PineEngine {
-GeometryLoader::GeometryLoader(const Path &path) : path(path), preset(GeometryPreset::NONE) {}
-
-GeometryLoader::GeometryLoader(const GeometryPreset &preset) : path(""), preset(preset) {}
-
-std::vector<VertexData> GeometryLoader::getVerticesData() {
-    if (this->preset == GeometryPreset::BOX) {
-        return this->_getBoxVerticesData();
+    GeometryLoader::GeometryLoader(const Path &path) : path(path), preset(GeometryPreset::NONE) {
     }
 
-    throw std::runtime_error("Failed to get vertex data!");
-}
-
-std::vector<uint32_t> GeometryLoader::getIndices() {
-    if (this->preset == GeometryPreset::BOX) {
-        return this->_getBoxIndices();
+    GeometryLoader::GeometryLoader(const GeometryPreset &preset) : path(""), preset(preset) {
     }
 
-    throw std::runtime_error("Failed to get indices!");
-}
+    std::pair<std::vector<VertexData>, std::vector<uint32_t> > GeometryLoader::load() {
+        const std::unordered_map<GeometryPreset, std::string> modelPathMap{
+            {GeometryPreset::NONE, this->path.asAbsolutePathString()},
+            {GeometryPreset::BOX, "../models/basic/Cube.glb"},
+            {GeometryPreset::SPHERE, "../models/basic/Sphere.glb"},
+        };
 
-std::vector<VertexData> GeometryLoader::_getBoxVerticesData() {
-    std::vector<VertexData> vertexData{{
-                                           .name = "vertexInPosition",
-                                           .data =
-                                               {// Front (+Z)
-                                                -0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                0.5f,
+        const auto &path_ = modelPathMap.at(this->preset);
 
-                                                // Back (-Z)
-                                                0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                -0.5f,
+        Assimp::Importer importer;
+        const aiScene *scene = importer.ReadFile(path_, aiProcess_Triangulate | aiProcess_GenNormals);
 
-                                                // Left (-X)
-                                                -0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                -0.5f,
+        if (!scene) {
+            throw std::runtime_error(FORMAT("Failed to load model \"{}\"!", path_));
+        }
 
-                                                // Right (+X)
-                                                0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                0.5f,
+        VertexData vertices{.name = "vertexInPosition", .data = {}, .dimensionality = 3};
+        VertexData normals{.name = "vertexInNormal", .data = {}, .dimensionality = 3};
+        std::vector<uint32_t> indices;
 
-                                                // Top (+Y)
-                                                -0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                -0.5f,
+        uint32_t indexOffset = 0;
+        for (uint32_t mi = 0; mi < scene->mNumMeshes; mi++) {
+            const aiMesh *mesh = scene->mMeshes[mi];
 
-                                                // Bottom (-Y)
-                                                -0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                -0.5f,
-                                                0.5f,
-                                                -0.5f,
-                                                -0.5f,
-                                                0.5f},
-                                           .dimensionality = 3,
-                                       },
-                                       {
-                                           .name = "vertexInNormal",
-                                           .data =
-                                               {// Front (+Z)
-                                                0,
-                                                0,
-                                                1,
-                                                0,
-                                                0,
-                                                1,
-                                                0,
-                                                0,
-                                                1,
-                                                0,
-                                                0,
-                                                1,
+            for (uint32_t vi = 0; vi < mesh->mNumVertices; vi++) {
+                vertices.data.push_back(mesh->mVertices[vi].x);
+                vertices.data.push_back(mesh->mVertices[vi].y);
+                vertices.data.push_back(mesh->mVertices[vi].z);
+                normals.data.push_back(mesh->mNormals[vi].x);
+                normals.data.push_back(mesh->mNormals[vi].y);
+                normals.data.push_back(mesh->mNormals[vi].z);
+            }
 
-                                                // Back (-Z)
-                                                0,
-                                                0,
-                                                -1,
-                                                0,
-                                                0,
-                                                -1,
-                                                0,
-                                                0,
-                                                -1,
-                                                0,
-                                                0,
-                                                -1,
+            for (uint32_t fi = 0; fi < mesh->mNumFaces; fi++) {
+                const auto &face = mesh->mFaces[fi];
+                for (uint32_t ii = 0; ii < face.mNumIndices; ii++) {
+                    indices.push_back(face.mIndices[ii] + indexOffset);
+                }
+            }
 
-                                                // Left (-X)
-                                                -1,
-                                                0,
-                                                0,
-                                                -1,
-                                                0,
-                                                0,
-                                                -1,
-                                                0,
-                                                0,
-                                                -1,
-                                                0,
-                                                0,
+            indexOffset += mesh->mNumVertices;
+        }
 
-                                                // Right (+X)
-                                                1,
-                                                0,
-                                                0,
-                                                1,
-                                                0,
-                                                0,
-                                                1,
-                                                0,
-                                                0,
-                                                1,
-                                                0,
-                                                0,
-
-                                                // Top (+Y)
-                                                0,
-                                                1,
-                                                0,
-                                                0,
-                                                1,
-                                                0,
-                                                0,
-                                                1,
-                                                0,
-                                                0,
-                                                1,
-                                                0,
-
-                                                // Bottom (-Y)
-                                                0,
-                                                -1,
-                                                0,
-                                                0,
-                                                -1,
-                                                0,
-                                                0,
-                                                -1,
-                                                0,
-                                                0,
-                                                -1,
-                                                0},
-                                           .dimensionality = 3,
-                                       }};
-    return vertexData;
-}
-
-std::vector<uint32_t> GeometryLoader::_getBoxIndices() {
-    std::vector<uint32_t> indices{0,  1,  2,  2,  3,  0,  4,  5,  6,  6,  7,  4,  8,  9,  10, 10, 11, 8,
-                                  12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20};
-    return indices;
-}
+        return {{std::move(vertices), std::move(normals)}, indices};
+    }
 } // namespace PineEngine

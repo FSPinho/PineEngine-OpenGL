@@ -1,28 +1,34 @@
 #pragma once
 
-#include <PineEngine/application/Camera/Camera.h>
 #include <PineEngine/application/Object/Object.h>
-#include <PineEngine/util/Resource/Resource.h>
-#include <PineEngine/util/ResourceHandler/ResourceHandler.h>
+#include <PineEngine/application/Light/Light.h>
+#include <PineEngine/util/SerialID/SerialID.h>
 #include <vector>
 
 namespace PineEngine {
-class Scene : public Resource {
-  public:
-    explicit Scene(const Path &path);
-    ~Scene() override;
+    class Scene {
+    public:
+        explicit Scene();
+        ~Scene();
 
-    void addChild(ResourceHandler<Scene> &&child);
-    void addChild(ResourceHandler<Object> &&child);
+        void addChild(Scene &&child);
+        void addChild(Object &&child);
+        void addChild(PointLight &&child);
 
-    void performRendering(const double &time, const Camera &camera);
+        std::vector<Object>& getObjects();
+        std::vector<PointLight>& getPointLights();
 
-  protected:
-    void performLoad() override;
-    void performUnload() override;
+    private:
+        ID id;
 
-  private:
-    std::vector<ResourceHandler<Scene>> childrenScenes;
-    std::vector<ResourceHandler<Object>> childrenObjects;
-};
+        Scene *parent = nullptr;
+
+        std::vector<ID> childrenScenes;
+        std::vector<ID> childrenObjects;
+        std::vector<ID> childrenPointLights;
+
+        std::vector<Scene> allChildrenScenes;
+        std::vector<Object> allChildrenObjects;
+        std::vector<PointLight> allChildrenPointLights;
+    };
 } // namespace PineEngine

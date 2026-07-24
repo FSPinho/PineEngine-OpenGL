@@ -4,27 +4,27 @@
 #include <vector>
 
 namespace PineEngine {
-class Path {
-  public:
-    explicit Path(const std::string &path);
+    class Path {
+    public:
+        explicit Path(const std::string &path);
 
-    std::string getPrefix() const;
-    std::string asString(bool includePrefix = true) const;
-    std::string asAbsolutePathString() const;
+        std::string getPrefix() const;
+        std::string asString(bool includePrefix = true) const;
+        std::string asAbsolutePathString() const;
 
-    bool operator==(const std::string &other) const;
-    Path operator/(const std::string &other) const;
+        bool operator==(const std::string &other) const;
+        Path operator/(const std::string &other) const;
 
-    static Path inMemory(const std::string &path);
-    static Path inDisk(const std::string &path);
+        static Path inMemory(const std::string &path);
+        static Path inDisk(const std::string &path);
 
-    inline static std::string inDiskRootFolder = "";
-    static void setInDiskRootFolder(const std::string &path);
+        inline static std::string inDiskRootFolder = "";
+        static void setInDiskRootFolder(const std::string &path);
 
-  private:
-    std::string prefix;
-    std::vector<std::string> parts;
+    private:
+        std::string prefix;
+        std::vector<std::string> parts;
 
-    void _initializeParts(const std::string &path);
-};
+        void _initializeParts(const std::string &path);
+    };
 } // namespace PineEngine

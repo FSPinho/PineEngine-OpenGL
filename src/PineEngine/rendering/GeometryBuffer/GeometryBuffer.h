@@ -7,29 +7,36 @@
 #include <vector>
 
 namespace PineEngine {
+    class GeometryBuffer : public Resource, public RendererComponent {
+    public:
+        explicit GeometryBuffer(const Path &path, const GeometryPreset &preset, RendererBackend &backend);
+        explicit GeometryBuffer(const Path &path, RendererBackend &backend);
+        ~GeometryBuffer() override;
 
-class GeometryBuffer : public Resource, public RendererComponent {
-  public:
-    explicit GeometryBuffer(const Path &path, const GeometryPreset &preset, RendererBackend &backend);
-    ~GeometryBuffer() override;
+        void performRendering() override;
 
-    void performRendering() override;
+        void enableWireframe();
 
-  protected:
-    void performLoad() override;
-    void performUnload() override;
+    protected:
+        void performLoad() override;
+        void performUnload() override;
 
-  private:
-    GeometryLoader loader;
+    private:
+        GeometryLoader loader;
 
-    uint32_t geometryId = 0;
-    uint32_t verticesBufferId = 0;
-    uint32_t indicesBufferId = 0;
-    bool isGeometryLoaded = false;
-    uint32_t indicesCount = 0;
+        std::vector<VertexData> verticesData;
+        std::vector<uint32_t> indices;
 
-    void _validateGeometry(const std::vector<VertexData> &verticesData, const std::vector<uint32_t> &indices);
-    void _loadGeometry(const std::vector<VertexData> &verticesData, const std::vector<uint32_t> &indices);
-    void _unloadGeometry();
-};
+        uint32_t geometryId = 0;
+        uint32_t verticesBufferId = 0;
+        uint32_t indicesBufferId = 0;
+        bool isGeometryLoaded = false;
+        uint32_t indicesCount = 0;
+
+        bool wireFrameEnabled = false;
+
+        void _validateGeometry(const std::vector<VertexData> &verticesData, const std::vector<uint32_t> &indices);
+        void _uploadGeometryToGPU(const std::vector<VertexData> &verticesData, const std::vector<uint32_t> &indices);
+        void _deleteGeometryFromGPU();
+    };
 } // namespace PineEngine

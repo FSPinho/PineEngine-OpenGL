@@ -1,34 +1,49 @@
 #pragma once
 
 #include <PineEngine/application/Camera/Camera.h>
+#include <PineEngine/application/Light/Light.h>
 #include <PineEngine/rendering/GeometryBuffer/GeometryBuffer.h>
 #include <PineEngine/rendering/ShaderSet/ShaderSet.h>
-#include <PineEngine/util/Path/Path.h>
-#include <PineEngine/util/Resource/Resource.h>
 #include <PineEngine/util/ResourceHandler/ResourceHandler.h>
+#include <PineEngine/util/ResourceManager/ResourceManager.h>
 #include <PineEngine/util/Transform/Transform.h>
-#include <optional>
+#include <PineEngine/util/Timer/Timer.h>
+#include <PineEngine/util/SerialID/SerialID.h>
+
 
 namespace PineEngine {
-class Object : public Resource {
-  public:
-    explicit Object(const Path &path);
-    ~Object() override;
+    class Object {
+    public:
+        explicit Object();
+        ~Object();
 
-    void setGeometry(ResourceHandler<GeometryBuffer> &&geometry_) { this->geometry = std::move(geometry_); }
-    void setShaderSet(ResourceHandler<ShaderSet> &&shaderSet_) { this->shaderSet = std::move(shaderSet_); }
+        Transform &getTransform();
 
-    void performRendering(const double &time, const Camera &camera);
+        template<typename T, typename... Args>
+        void setGeometry(Args... args) {
+            this->geometry = ResourceManager::load<T>(args...);
+        }
 
-  protected:
-    void performLoad() override;
-    void performUnload() override;
+        template<typename T, typename... Args>
+        void setShaderSet(Args... args) {
+            this->shaderSet = ResourceManager::load<T>(args...);
+        }
 
-    Transform &getTransform();
+        GeometryBuffer &getGeometry();
 
-  private:
-    Transform transform;
-    std::optional<ResourceHandler<GeometryBuffer>> geometry;
-    std::optional<ResourceHandler<ShaderSet>> shaderSet;
-};
+        void performRendering(
+            const Tick &tick,
+            const Camera &camera,
+            const std::vector<PointLight> &pointLights
+        );
+
+        bool operator==(const Object &other) const;
+
+    private:
+        ID id;
+
+        Transform transform;
+        ResourceHandler<GeometryBuffer> geometry;
+        ResourceHandler<ShaderSet> shaderSet;
+    };
 } // namespace PineEngine

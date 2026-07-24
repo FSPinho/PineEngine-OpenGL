@@ -1,34 +1,51 @@
 #include "Object.h"
 
 namespace PineEngine {
-
-Object::Object(const Path &path) : Resource(path) {
-    LOG_CONSTRUCTOR(FORMAT("Object[{}]", this->getPath().asString()));
-}
-
-Object::~Object() {
-    LOG_DESTRUCTOR(FORMAT("Object[{}]", this->getPath().asString()));
-}
-
-void Object::performRendering(const double &time, const Camera &camera) {
-    this->transform.setRotationQuaternion(glm::quat(glm::vec3(0.0f, glm::radians(-time * 45.0f), 0.0f)));
-
-    if (this->shaderSet.has_value()) {
-        this->shaderSet.value()->setUniform("MODEL_MATRIX", this->transform.getMatrix());
-        this->shaderSet.value()->setUniform("VIEW_MATRIX", camera.getViewMatrix());
-        this->shaderSet.value()->setUniform("PROJECTION_MATRIX", camera.getProjectionMatrix());
-        this->shaderSet.value()->performRendering();
+    Object::Object() : id(SerialID::generate()) {
+        LOG_CONSTRUCTOR(FORMAT("Object[{}]", this->id));
     }
-    if (this->geometry.has_value()) {
-        this->geometry.value()->performRendering();
+
+    Object::~Object() {
+        LOG_DESTRUCTOR(FORMAT("Object[{}]", this->id));
     }
-}
 
-void Object::performLoad() {}
+    GeometryBuffer & Object::getGeometry() {
+        return *(this->geometry);
+    }
 
-void Object::performUnload() {}
+    void Object::performRendering(const Tick &tick, const Camera &camera,
+                                  const std::vector<PointLight> &pointLights) {
+        if (this->shaderSet) {
+            this->shaderSet->setUniform("TIME", static_cast<float>(tick.elapsed));
+            this->shaderSet->setUniform("MODEL_MATRIX", this->transform.getMatrix());
+            this->shaderSet->setUniform("VIEW_MATRIX", camera.getViewMatrix());
+            this->shaderSet->setUniform("VIEW_POSITION", camera.getTranslation());
+            this->shaderSet->setUniform("PROJECTION_MATRIX", camera.getProjectionMatrix());
 
-Transform &Object::getTransform() {
-    return this->transform;
-}
+            this->shaderSet->setUniform(
+                "POINT_LIGHTS_COUNT",
+                std::vector{static_cast<uint32_t>(pointLights.size())}
+            );
+
+            for (uint32_t i = 0; i < pointLights.size(); i++) {
+                std::string prefix = std::string("POINT_LIGHTS[") + std::to_string(i) + "].";
+                this->shaderSet->setUniform(prefix + "translation", pointLights[i].translation);
+                this->shaderSet->setUniform(prefix + "radiantIntensity", pointLights[i].radiantIntensity);
+            }
+
+            this->shaderSet->performRendering();
+        }
+        if (this->geometry) {
+            this->geometry->performRendering();
+        }
+    }
+
+    bool Object::operator==(const Object &other) const {
+        return this->id == other.id;
+    }
+
+
+    Transform &Object::getTransform() {
+        return this->transform;
+    }
 } // namespace PineEngine

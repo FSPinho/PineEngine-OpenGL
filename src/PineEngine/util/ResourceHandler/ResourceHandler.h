@@ -1,34 +1,51 @@
 #pragma once
+#include <PineEngine/util/Log/Log.h>
+#include <PineEngine/util/Resource/Resource.h>
 
-#include <functional>
-#include <vector>
 
 namespace PineEngine {
-template <typename R> class ResourceHandler {
-  public:
-    explicit ResourceHandler(R *resource) : resource(resource) {
-    }
+    class ResourceManager;
 
-    // Block copy
-    ResourceHandler(const ResourceHandler &) = delete;
-    ResourceHandler &operator=(const ResourceHandler &) = delete;
-    ResourceHandler(ResourceHandler &&) = default;
-    ResourceHandler &operator=(ResourceHandler &&) = default;
-
-    ~ResourceHandler() {
-        for (const auto &listener : this->releaseListeners) {
-            listener();
+    template<typename R>
+        requires std::derived_from<R, Resource>
+    class ResourceHandler {
+    public:
+        explicit ResourceHandler() : ResourceHandler(nullptr) {
         }
-    }
 
-    R *operator->() { return this->resource; }
+        explicit ResourceHandler(R *resource)
+            : resource(resource),
+              resourceKey(
+                  resource != nullptr
+                      ? resource->getPath().asString()
+                      : "-undefined-"
+              ) {
+            if (this->resource != nullptr) {
+                ResourceManager::notifyResourceAcquired(this->resourceKey);
+            }
+        }
 
-    void addHandlerReleasedListener(const std::function<void()> &&listener) {
-        this->releaseListeners.push_back(std::move(listener));
-    }
+        ResourceHandler(const ResourceHandler &other) : ResourceHandler(other.resource) {
+        }
 
-  private:
-    R *resource;
-    std::vector<std::function<void()>> releaseListeners;
-};
+        ResourceHandler &operator=(const ResourceHandler &) = delete;
+
+        ResourceHandler(ResourceHandler &&) noexcept = default;
+        ResourceHandler &operator=(ResourceHandler &&) noexcept = default;
+
+        ~ResourceHandler() {
+            if (this->resource != nullptr) {
+                ResourceManager::notifyResourceReleased(this->resourceKey);
+            }
+        }
+
+        R *operator->() { return this->resource; }
+        R &operator*() { return *this->resource; }
+
+        explicit operator bool() const { return this->resource != nullptr; }
+
+    private:
+        R *resource;
+        std::string resourceKey;
+    };
 } // namespace PineEngine

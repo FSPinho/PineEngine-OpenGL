@@ -4,28 +4,23 @@
 #include <vector>
 
 namespace PineEngine {
-enum class GeometryPreset { NONE, BOX };
+    enum class GeometryPreset { NONE, BOX, SPHERE };
 
-struct VertexData {
-    std::string name;
-    std::vector<float> data;
-    uint32_t dimensionality;
-};
+    struct VertexData {
+        std::string name;
+        std::vector<float> data;
+        uint32_t dimensionality;
+    };
 
-class GeometryLoader {
+    class GeometryLoader {
+    public:
+        explicit GeometryLoader(const Path &path);
+        explicit GeometryLoader(const GeometryPreset &preset);
 
-  public:
-    explicit GeometryLoader(const Path &path);
-    explicit GeometryLoader(const GeometryPreset &preset);
+        std::pair<std::vector<VertexData>, std::vector<uint32_t>> load();
 
-    std::vector<VertexData> getVerticesData();
-    std::vector<uint32_t> getIndices();
-
-  private:
-    Path path;
-    GeometryPreset preset;
-
-    std::vector<VertexData> _getBoxVerticesData();
-    std::vector<uint32_t> _getBoxIndices();
-};
+    private:
+        Path path;
+        GeometryPreset preset;
+    };
 } // namespace PineEngine

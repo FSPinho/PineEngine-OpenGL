@@ -1,7 +1,10 @@
 #include <PineEngine/util/Path/Path.h>
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("Path") {
+TEST_CASE (
+"Path"
+)
+ {
     SECTION("Created correctly") {
         REQUIRE(PineEngine::Path("").asString() == "");
         REQUIRE(PineEngine::Path("abc").asString() == "abc");

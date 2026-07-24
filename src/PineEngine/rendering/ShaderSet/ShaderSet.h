@@ -11,34 +11,36 @@
 #include <vector>
 
 namespace PineEngine {
-class ShaderSet : public Resource, RendererComponent {
-  public:
-    explicit ShaderSet(const Path &path, RendererBackend &backend);
-    ~ShaderSet() override;
+    class ShaderSet : public Resource, RendererComponent {
+    public:
+        explicit ShaderSet(const Path &path, RendererBackend &backend);
+        ~ShaderSet() override;
 
-    void setUniform(const std::string &name, const std::vector<float> &value);
-    void setUniform(const std::string &name, const glm::mat4 &value);
+        void setUniform(const std::string &name, const std::vector<uint32_t> &value);
+        void setUniform(const std::string &name, const std::vector<float> &value);
+        void setUniform(const std::string &name, const glm::mat4 &value);
 
-    void performRendering() override;
+        void performRendering() override;
 
-  protected:
-    void performLoad() override;
-    void performUnload() override;
+    protected:
+        void performLoad() override;
+        void performUnload() override;
 
-  private:
-    uint32_t shadersId = 0;
-    bool areShadersLoaded = false;
+    private:
+        uint32_t shadersId = 0;
+        bool areShadersLoaded = false;
 
-    File vertexShaderCodeFile;
-    FileWatch vertexShaderCodeFileWatch;
-    File fragmentShaderCodeFile;
-    FileWatch fragmentShaderCodeFileWatch;
+        File vertexShaderCodeFile;
+        FileWatch vertexShaderCodeFileWatch;
+        File fragmentShaderCodeFile;
+        FileWatch fragmentShaderCodeFileWatch;
 
-    std::unordered_map<std::string, std::vector<float>> floatUniforms;
-    std::unordered_map<std::string, glm::mat4> matrixUniforms;
+        std::unordered_map<std::string, std::vector<uint32_t> > intUniforms;
+        std::unordered_map<std::string, std::vector<float> > floatUniforms;
+        std::unordered_map<std::string, glm::mat4> matrixUniforms;
 
-    void _loadShaders();
-    void _unloadShaders();
-    void _setUniforms();
-};
+        void _loadShaders();
+        void _unloadShaders();
+        void _setUniforms();
+    };
 } // namespace PineEngine

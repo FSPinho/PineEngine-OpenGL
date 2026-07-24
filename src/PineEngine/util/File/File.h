@@ -4,13 +4,13 @@
 #include <string>
 
 namespace PineEngine {
-class File {
-  public:
-    explicit File(const Path &path);
+    class File {
+    public:
+        explicit File(const Path &path);
 
-    std::string readAsText();
+        std::string readAsText();
 
-  private:
-    Path path;
-};
+    private:
+        Path path;
+    };
 } // namespace PineEngine

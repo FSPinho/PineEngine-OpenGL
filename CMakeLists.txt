@@ -9,6 +9,7 @@ find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 
 add_library(
         PineEngine
@@ -40,6 +41,12 @@ add_library(
         src/PineEngine/application/Object/Object.cpp
         src/PineEngine/application/Camera/Camera.h
         src/PineEngine/application/Camera/Camera.cpp
+        src/PineEngine/application/Light/Light.h
+        src/PineEngine/editor/CameraController/CameraController.h
+        src/PineEngine/editor/CameraController/CameraController.cpp
+
+        src/PineEngine/editor/Editor/Editor.h
+        src/PineEngine/editor/Editor/Editor.cpp
 
         src/PineEngine/Util/Log/Log.h
         src/PineEngine/Util/SerialID/SerialID.h
@@ -57,9 +64,9 @@ add_library(
         src/PineEngine/Util/Path/Path.cpp
         src/PineEngine/Util/Resource/Resource.h
         src/PineEngine/Util/Resource/Resource.cpp
-        src/PineEngine/Util/ResourceHandler/ResourceHandler.h
         src/PineEngine/Util/ResourceManager/ResourceManager.h
         src/PineEngine/Util/ResourceManager/ResourceManager.cpp
+        src/PineEngine/Util/ResourceHandler/ResourceHandler.h
         src/PineEngine/Util/GeometryLoader/GeometryLoader.h
         src/PineEngine/Util/GeometryLoader/GeometryLoader.cpp
 )
@@ -67,6 +74,7 @@ target_link_libraries(
         PineEngine PUBLIC
         glad::glad
         glfw
+        assimp::assimp
 )
 target_include_directories(
         PineEngine

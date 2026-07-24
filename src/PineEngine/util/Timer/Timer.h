@@ -3,17 +3,23 @@
 #include <PineEngine/rendering/RendererComponent/RendererComponent.h>
 
 namespace PineEngine {
-class Timer {
-  public:
-    Timer();
-    ~Timer();
+    struct Tick {
+        double elapsed = 0.0;
+        double delta = 0.0;
+    };
 
-    float getElapsed() const;
-    void trackFPS();
+    class Timer {
+    public:
+        Timer();
+        ~Timer();
 
-  protected:
-    double startTime;
-    double lastFPSNotificationTime;
-    uint32_t frameSinceLastFPSNotification;
-};
+        Tick getNextTick();
+        void trackFPS();
+
+    protected:
+        double startTime;
+        double lastTickNotificationTime;
+        double lastFPSNotificationTime;
+        uint32_t framesSinceLastFPSNotification;
+    };
 } // namespace PineEngine
