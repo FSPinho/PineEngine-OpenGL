@@ -17,6 +17,8 @@ namespace PineEngine {
 
         void enableWireframe();
 
+        void calculateLightInfluence(const std::vector<float> &lightPositions);
+
     protected:
         void performLoad() override;
         void performUnload() override;
@@ -35,8 +37,10 @@ namespace PineEngine {
 
         bool wireFrameEnabled = false;
 
-        void _validateGeometry(const std::vector<VertexData> &verticesData, const std::vector<uint32_t> &indices);
-        void _uploadGeometryToGPU(const std::vector<VertexData> &verticesData, const std::vector<uint32_t> &indices);
+        bool hasCalculatedLightInfluence = false;
+
+        void _validateGeometry();
+        void _uploadGeometryToGPU();
         void _deleteGeometryFromGPU();
     };
 } // namespace PineEngine

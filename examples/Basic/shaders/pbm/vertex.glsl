@@ -1,8 +1,10 @@
 #version 330 core
 layout (location = 0) in vec3 vertexInPosition;
 layout (location = 1) in vec3 vertexInNormal;
+layout (location = 2) in float vertexInLightInfluence;
 
 out vec4 vertexOutNormal;
+out float vertexOutLightInfluence[16];
 out vec4 vertexOutWorldPos;
 
 uniform mat4 MODEL_MATRIX;
@@ -15,6 +17,11 @@ void main() {
 
     vertexOutNormal = MODEL_MATRIX * normal;
     vertexOutWorldPos = MODEL_MATRIX * position;
+
+    for (int i = 0; i < 16; i++) {
+        bool isLightEnabled = (int(vertexInLightInfluence) & (1 << i)) != 0;
+        vertexOutLightInfluence[i] = isLightEnabled ? 1.0f : 0.0f;
+    }
 
     gl_Position = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * position;
 }

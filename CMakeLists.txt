@@ -69,6 +69,8 @@ add_library(
         src/PineEngine/Util/ResourceHandler/ResourceHandler.h
         src/PineEngine/Util/GeometryLoader/GeometryLoader.h
         src/PineEngine/Util/GeometryLoader/GeometryLoader.cpp
+        src/PineEngine/util/OcclusionMap/OcclusionMap.h
+        src/PineEngine/util/Subdivider/Subdivider.h
 )
 target_link_libraries(
         PineEngine PUBLIC
@@ -103,11 +105,14 @@ target_link_libraries(
 
 add_executable(Tests_ResourceManager tests/test_ResourceManager.cpp)
 add_executable(Tests_Path tests/test_Path.cpp)
+add_executable(Tests_OcclusionMap tests/test_OcclusionMap.cpp)
 target_link_libraries(Tests_ResourceManager PRIVATE PineEngine Catch2::Catch2WithMain)
 target_link_libraries(Tests_Path PRIVATE PineEngine Catch2::Catch2WithMain)
+target_link_libraries(Tests_OcclusionMap PRIVATE PineEngine Catch2::Catch2WithMain)
 
 include(CTest)
 include(Catch)
 
 catch_discover_tests(Tests_ResourceManager)
 catch_discover_tests(Tests_Path)
+catch_discover_tests(Tests_OcclusionMap)

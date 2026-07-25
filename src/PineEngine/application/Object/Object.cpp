@@ -9,7 +9,7 @@ namespace PineEngine {
         LOG_DESTRUCTOR(FORMAT("Object[{}]", this->id));
     }
 
-    GeometryBuffer & Object::getGeometry() {
+    GeometryBuffer &Object::getGeometry() {
         return *(this->geometry);
     }
 
@@ -36,6 +36,13 @@ namespace PineEngine {
             this->shaderSet->performRendering();
         }
         if (this->geometry) {
+            std::vector<float> lightPositions;
+            for (const auto &light: pointLights) {
+                lightPositions.push_back(light.translation[0]);
+                lightPositions.push_back(light.translation[1]);
+                lightPositions.push_back(light.translation[2]);
+            }
+            this->geometry->calculateLightInfluence(lightPositions);
             this->geometry->performRendering();
         }
     }
@@ -43,7 +50,6 @@ namespace PineEngine {
     bool Object::operator==(const Object &other) const {
         return this->id == other.id;
     }
-
 
     Transform &Object::getTransform() {
         return this->transform;

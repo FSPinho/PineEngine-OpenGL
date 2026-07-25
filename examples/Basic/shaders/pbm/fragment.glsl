@@ -1,7 +1,7 @@
 #version 330 core
 
-in vec4 vertexOutColor;
 in vec4 vertexOutNormal;
+in float vertexOutLightInfluence[16];
 in vec4 vertexOutWorldPos;
 
 out vec4 fragmentOutColor;
@@ -32,7 +32,7 @@ void main() {
     float metallic = 0.0;
 
     for (int i = 0; i < POINT_LIGHTS_COUNT; i++) {
-        outColor += Lo_PointLight(i, albedo, roughness, reflectance, metallic);
+        outColor += Lo_PointLight(i, albedo, roughness, reflectance, metallic) * vertexOutLightInfluence[i];
     }
 
     outColor = ACES(outColor);

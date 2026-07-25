@@ -1,6 +1,8 @@
 #include "GeometryBuffer.h"
 
+#include <PineEngine/util/OcclusionMap/OcclusionMap.h>
 #include <stdexcept>
+#include <numbers>
 #include <string>
 
 namespace PineEngine {
@@ -31,28 +33,66 @@ namespace PineEngine {
         this->wireFrameEnabled = true;
     }
 
+    void GeometryBuffer::calculateLightInfluence(const std::vector<float> &lightPositions) {
+        if (this->hasCalculatedLightInfluence) return;
+
+        for (uint32_t lightIndex = 0; lightIndex < lightPositions.size(); lightIndex += 3) {
+            LOG(FORMAT("Processing light {}/{}", (lightIndex / 3) + 1, lightPositions.size() / 3));
+
+            const glm::vec3 lightPos(
+                lightPositions[lightIndex],
+                lightPositions[lightIndex + 1],
+                lightPositions[lightIndex + 2]
+            );
+            OcclusionMap map(lightPos, std::numbers::pi / 128.0f);
+            map.computeFrom(this->verticesData[0].data, this->indices);
+
+            for (uint32_t vertexIndex = 0; vertexIndex < this->verticesData[0].data.size(); vertexIndex += 3) {
+                auto flags = static_cast<uint32_t>(this->verticesData[2].data[vertexIndex / 3]);
+
+                if (map.isOccluded(vertexIndex / 3, this->verticesData[0].data, this->indices)) {
+                    flags &= ~(1 << (lightIndex / 3));
+                } else {
+                    flags |= 1 << (lightIndex / 3);
+                }
+
+                this->verticesData[2].data[vertexIndex / 3] = static_cast<float>(flags);
+            }
+        }
+
+        this->_deleteGeometryFromGPU();
+        this->_uploadGeometryToGPU();
+
+        this->hasCalculatedLightInfluence = true;
+    }
+
     void GeometryBuffer::performLoad() {
         std::tie(this->verticesData, this->indices) = this->loader.load();
-        this->_validateGeometry(verticesData, indices);
-        this->_uploadGeometryToGPU(verticesData, indices);
+        this->verticesData.push_back({
+            .name = "vertexInLightInfluence",
+            .data = std::vector(this->verticesData[0].data.size() / this->verticesData[0].dimensionality, 0.0f),
+            .dimensionality = 1
+        });
+
+        this->_validateGeometry();
+        this->_uploadGeometryToGPU();
     }
 
     void GeometryBuffer::performUnload() {
         this->_deleteGeometryFromGPU();
     }
 
-    void GeometryBuffer::_validateGeometry(const std::vector<VertexData> &verticesData,
-                                           const std::vector<uint32_t> &indices) {
-        if (verticesData.empty()) {
+    void GeometryBuffer::_validateGeometry() {
+        if (this->verticesData.empty()) {
             throw std::runtime_error("Vertices data must have at least one attribute!");
         }
 
-        const uint32_t sizeRef = verticesData[0].data.size() / verticesData[0].dimensionality;
+        const uint32_t sizeRef = this->verticesData[0].data.size() / this->verticesData[0].dimensionality;
         if (sizeRef == 0) {
             throw std::runtime_error("Vertices data cannot be empty!");
         }
 
-        for (const auto &vertexData: verticesData) {
+        for (const auto &vertexData: this->verticesData) {
             if (vertexData.data.size() % vertexData.dimensionality != 0) {
                 throw std::runtime_error(FORMAT("The size of the vertex data \"{}\" should be divisible by {}!",
                                                 vertexData.name, vertexData.dimensionality));
@@ -64,8 +104,7 @@ namespace PineEngine {
         }
     }
 
-    void GeometryBuffer::_uploadGeometryToGPU(const std::vector<VertexData> &verticesData,
-                                       const std::vector<uint32_t> &indices) {
+    void GeometryBuffer::_uploadGeometryToGPU() {
         this->geometryId = this->backend.createGeometry();
         this->verticesBufferId = this->backend.createDataBuffer();
         this->indicesBufferId = this->backend.createDataBuffer();
@@ -74,7 +113,7 @@ namespace PineEngine {
         uint32_t combinedVerticesDataSize = 0;
         uint32_t combinedVerticesDataSizeInBytes = 0;
         uint32_t combinedDimensionality = 0;
-        for (const auto vertexData: verticesData) {
+        for (const auto &vertexData: this->verticesData) {
             combinedVerticesDataSize += vertexData.data.size();
             combinedVerticesDataSizeInBytes += vertexData.data.size() * sizeof(vertexData.data[0]);
             combinedDimensionality += vertexData.dimensionality;
@@ -85,7 +124,7 @@ namespace PineEngine {
         std::vector<float> combinedData(combinedVerticesDataSize);
         uint32_t combinedDataCursor = 0;
         for (uint32_t i = 0; i < combinedVerticesDataSize / combinedDimensionality; i++) {
-            for (const auto &vertexData: verticesData) {
+            for (const auto &vertexData: this->verticesData) {
                 for (uint32_t di = 0; di < vertexData.dimensionality; di++) {
                     combinedData[combinedDataCursor] = vertexData.data[i * vertexData.dimensionality + di];
                     combinedDataCursor++;
@@ -99,17 +138,20 @@ namespace PineEngine {
 
         // Bind each attribute's buffer with the geometry
         uint32_t offset = 0;
-        for (uint32_t i = 0; i < verticesData.size(); i++) {
-            this->backend.bindDataBufferToGeometry(this->geometryId, this->verticesBufferId, i,
-                                                   verticesData[i].dimensionality, combinedDimensionality, offset);
-            offset += verticesData[i].dimensionality;
+        for (uint32_t i = 0; i < this->verticesData.size(); i++) {
+            this->backend.bindDataBufferToGeometry(
+                this->geometryId, this->verticesBufferId, i,
+                this->verticesData[i].dimensionality, combinedDimensionality,
+                offset
+            );
+            offset += this->verticesData[i].dimensionality;
         }
 
         // Indices
-        this->indicesCount = indices.size();
-        this->backend.allocateIndexDataBuffer(this->indicesBufferId, indices.size() * sizeof(indices[0]));
-        this->backend.populateIndexDataBuffer(this->indicesBufferId, indices.data(), 0,
-                                              indices.size() * sizeof(indices[0]));
+        this->indicesCount = this->indices.size();
+        this->backend.allocateIndexDataBuffer(this->indicesBufferId, this->indices.size() * sizeof(this->indices[0]));
+        this->backend.populateIndexDataBuffer(this->indicesBufferId, this->indices.data(), 0,
+                                              this->indices.size() * sizeof(this->indices[0]));
         this->backend.bindIndexDataBufferToGeometry(this->geometryId, this->indicesBufferId);
         this->isGeometryLoaded = true;
     }
