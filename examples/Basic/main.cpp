@@ -13,8 +13,14 @@ int main() {
 
         auto composed_001 = Object();
         composed_001.setGeometry<GeometryBuffer>(Path::inDisk("models/composed_002.glb"), rb);
-        composed_001.setGraphicShader<GraphicShader>(
+        composed_001.setPositionPassShader<GraphicShader>(
             Path::inMemory("shaders/1"),
+            Path::inDisk("shaders/positionPass/vertex.glsl"),
+            Path::inDisk("shaders/positionPass/fragment.glsl"),
+            rb
+        );
+        composed_001.setGraphicShader<GraphicShader>(
+            Path::inMemory("shaders/2"),
             Path::inDisk("shaders/pbm/vertex.glsl"),
             Path::inDisk("shaders/pbm/fragment.glsl"),
             rb

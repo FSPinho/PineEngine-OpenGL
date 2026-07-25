@@ -15,6 +15,14 @@ namespace PineEngine {
     }
 
     std::pair<std::vector<VertexData>, std::vector<uint32_t> > GeometryLoader::load() {
+        if (this->preset == GeometryPreset::QUAD) {
+            return this->_loadQuad();
+        }
+
+        return this->_loadFromFile();
+    }
+
+    std::pair<std::vector<VertexData>, std::vector<uint32_t> > GeometryLoader::_loadFromFile() {
         const std::unordered_map<GeometryPreset, std::string> modelPathMap{
             {GeometryPreset::NONE, this->path.asAbsolutePathString()},
             {GeometryPreset::BOX, "../models/basic/Cube.glb"},
@@ -58,6 +66,30 @@ namespace PineEngine {
 
             indexOffset += mesh->mNumVertices;
         }
+
+        return {{std::move(vertices), std::move(normals)}, indices};
+    }
+
+    std::pair<std::vector<VertexData>, std::vector<uint32_t> > GeometryLoader::_loadQuad() {
+        VertexData vertices{
+            .name = "vertexInPosition", .data = {
+                -1.0f, -1.0f, 0.0f, 1.0f,
+                1.0f, -1.0f, 0.0f, 1.0f,
+                1.0f, 1.0f, 0.0f, 1.0f,
+                -1.0f, 1.0f, 0.0f, 1.0f,
+            },
+            .dimensionality = 4
+        };
+        VertexData normals{
+            .name = "vertexInNormal", .data = {
+                0.0f, 0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f,
+            },
+            .dimensionality = 4
+        };
+        std::vector<uint32_t> indices{0, 2, 1, 0, 3, 2};
 
         return {{std::move(vertices), std::move(normals)}, indices};
     }

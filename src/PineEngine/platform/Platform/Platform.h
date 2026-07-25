@@ -27,6 +27,8 @@ namespace PineEngine {
         bool isMouseRightButtonPressed() const;
         std::pair<double, double> getMousePosition() const;
 
+        std::pair<uint32_t, uint32_t> getSurfaceSize() const;
+
         void swapBuffers() const;
 
         void requestStop() const;

@@ -74,6 +74,13 @@ namespace PineEngine {
         return {x, y};
     }
 
+    std::pair<uint32_t, uint32_t> Platform::getSurfaceSize() const {
+        int width;
+        int height;
+        glfwGetWindowSize(this->window, &width, &height);
+        return {width, height};
+    }
+
     void Platform::swapBuffers() const {
         glfwSwapBuffers(this->window);
     }

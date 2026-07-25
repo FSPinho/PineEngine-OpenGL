@@ -17,7 +17,7 @@ namespace PineEngine {
     }
 
     void RendererBackend::clearFrame() {
-        glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -189,7 +189,7 @@ namespace PineEngine {
 
     void RendererBackend::setUniform(const uint32_t shaderId, const std::string &name,
                                      const std::vector<uint32_t> &value) {
-        const uint32_t uniformLocation = this->_getUniformLocation(shaderId, name);
+        const int32_t uniformLocation = this->_getUniformLocation(shaderId, name);
         if (uniformLocation == -1) return;
 
         glUseProgram(shaderId);
@@ -209,7 +209,7 @@ namespace PineEngine {
 
     void RendererBackend::setUniform(const uint32_t shaderId, const std::string &name,
                                      const std::vector<float> &value) {
-        const uint32_t uniformLocation = this->_getUniformLocation(shaderId, name);
+        const int32_t uniformLocation = this->_getUniformLocation(shaderId, name);
         if (uniformLocation == -1) return;
 
         glUseProgram(shaderId);
@@ -228,13 +228,29 @@ namespace PineEngine {
     }
 
     void RendererBackend::setUniform(const uint32_t shaderId, const std::string &name, const glm::mat4 &value) {
-        const uint32_t uniformLocation = this->_getUniformLocation(shaderId, name);
+        const int32_t uniformLocation = this->_getUniformLocation(shaderId, name);
         if (uniformLocation == -1) return;
 
         glUseProgram(shaderId);
         glUniformMatrix4fv(static_cast<GLint>(uniformLocation), 1, GL_FALSE, glm::value_ptr(value));
 
         this->_debugMethod("Set uniform", true);
+    }
+
+    void RendererBackend::setUniformTexture(
+        const uint32_t shaderId,
+        const std::string &name,
+        const uint32_t textureId
+    ) {
+        const int32_t uniformLocation = this->_getUniformLocation(shaderId, name);
+        if (uniformLocation == -1) return;
+
+        glUseProgram(shaderId);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        glUniform1i(uniformLocation, 0);
+
+        this->_debugMethod("Set uniform texture", true);
     }
 
     void RendererBackend::executeComputeShader(const uint32_t shaderId, const uint32_t &x, const uint32_t &y) {
@@ -247,10 +263,111 @@ namespace PineEngine {
                 glDispatchCompute(std::min(x - xi, 0xFFFFu), std::min(y - yi, 0xFFFFu), 1);
             }
         }
+
+        this->_debugMethod("Execute compute shader", true);
     }
 
     void RendererBackend::waitComputeShader() {
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    }
+
+    uint32_t RendererBackend::createColorTexture() {
+        uint32_t id;
+        glGenTextures(1, &id);
+        return id;
+    }
+
+    void RendererBackend::allocateColorTexture(const uint32_t textureId, const uint32_t width, const uint32_t height) {
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        this->_debugMethod("Allocate color texture", true);
+    }
+
+    void RendererBackend::bindTextureForCompute(const uint32_t textureId, const uint32_t attributeIndex) {
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        glBindImageTexture(
+            attributeIndex,
+            textureId,
+            0,
+            GL_FALSE,
+            0,
+            GL_READ_WRITE,
+            GL_RGBA32F
+        );
+        this->_debugMethod("Bind texture for compute", true);
+    }
+
+    void RendererBackend::configureTextureFilterNearest(const uint32_t textureId) {
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        this->_debugMethod("Configure texture filters", true);
+    }
+
+    void RendererBackend::configureTextureClampToEdge(const uint32_t textureId) {
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        this->_debugMethod("Configure texture wrapping", true);
+    }
+
+    void RendererBackend::deleteTexture(const uint32_t textureId) {
+        glDeleteTextures(1, &textureId);
+    }
+
+    uint32_t RendererBackend::createFrameBuffer() {
+        uint32_t id;
+        glGenFramebuffers(1, &id);
+        return id;
+    }
+
+    uint32_t RendererBackend::createDepthFrameBuffer() {
+        uint32_t id;
+        glGenRenderbuffers(1, &id);
+        return id;
+    }
+
+    void RendererBackend::allocateDepthFrameBuffer(
+        const uint32_t frameBufferId,
+        const uint32_t width,
+        const uint32_t height
+    ) {
+        glBindRenderbuffer(GL_RENDERBUFFER, frameBufferId);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+        this->_debugMethod("Allocate depth texture", true);
+    }
+
+    void RendererBackend::attachColorTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId) {
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
+
+        this->_debugMethod("Attach color texture to frame buffer", true);
+    }
+
+    void RendererBackend::attachDepthTextureToFrameBuffer(const uint32_t frameBufferId) {
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, frameBufferId);
+
+        this->_debugMethod("Attach depth texture to frame buffer", true);
+    }
+
+    void RendererBackend::prepareFrameBufferForRendering(
+        const uint32_t frameBufferId,
+        const uint32_t width,
+        const uint32_t height
+    ) {
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+        glViewport(0, 0, width, height);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            throw std::runtime_error("Framebuffer not loaded!");
+        }
+    }
+
+    void RendererBackend::deleteFrameBuffer(const uint32_t frameBufferId) {
+        glDeleteFramebuffers(1, &frameBufferId);
     }
 
     void RendererBackend::drawTriangles(const uint32_t vertexCount) {
@@ -296,8 +413,8 @@ namespace PineEngine {
         return id;
     }
 
-    uint32_t RendererBackend::_getUniformLocation(const uint32_t shaderId, const std::string &name) {
-        const uint32_t uniformLocation = glGetUniformLocation(shaderId, name.c_str());
+    int32_t RendererBackend::_getUniformLocation(const uint32_t shaderId, const std::string &name) {
+        const int32_t uniformLocation = glGetUniformLocation(shaderId, name.c_str());
         if (uniformLocation == -1) {
             // LOG(FORMAT("WARNING: Uniform \"{}\" not found in the shader!", name));
         }

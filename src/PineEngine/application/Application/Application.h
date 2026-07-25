@@ -8,6 +8,7 @@
 #include <PineEngine/platform/Platform/Platform.h>
 #include <PineEngine/rendering/Renderer/Renderer.h>
 #include <PineEngine/rendering/RendererBackend/RendererBackend.h>
+#include <PineEngine/rendering/FrameBuffer/FrameBuffer.h>
 #include <PineEngine/util/Timer/Timer.h>
 
 namespace PineEngine {
@@ -34,5 +35,8 @@ namespace PineEngine {
         Timer timer;
 
         Scene rootScene;
+
+        ResourceHandler<FrameBuffer> positionPassFrameBuffer;
+        Object colorPassObject;
     };
 } // namespace PineEngine

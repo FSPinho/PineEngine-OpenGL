@@ -4,7 +4,7 @@
 #include <vector>
 
 namespace PineEngine {
-    enum class GeometryPreset { NONE, BOX, SPHERE };
+    enum class GeometryPreset { NONE, BOX, SPHERE, QUAD };
 
     struct VertexData {
         std::string name;
@@ -22,5 +22,8 @@ namespace PineEngine {
     private:
         Path path;
         GeometryPreset preset;
+
+        std::pair<std::vector<VertexData>, std::vector<uint32_t> > _loadFromFile();
+        std::pair<std::vector<VertexData>, std::vector<uint32_t> > _loadQuad();
     };
 } // namespace PineEngine

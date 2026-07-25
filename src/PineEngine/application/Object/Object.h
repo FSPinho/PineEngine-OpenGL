@@ -27,6 +27,16 @@ namespace PineEngine {
         }
 
         template<typename T, typename... Args>
+        void setPositionPassShader(Args... args) {
+            this->positionPassShader = ResourceManager::load<T>(args...);
+        }
+
+        template<typename T, typename... Args>
+        void setColorPassShader(Args... args) {
+            this->colorPassShader = ResourceManager::load<T>(args...);
+        }
+
+        template<typename T, typename... Args>
         void setGraphicShader(Args... args) {
             this->graphicShader = ResourceManager::load<T>(args...);
         }
@@ -35,6 +45,17 @@ namespace PineEngine {
         void setComputeShader(Args... args) {
             this->computeShader = ResourceManager::load<T>(args...);
         }
+
+        void performPositionPassRendering(
+            const Tick &tick,
+            const Camera &camera
+        );
+
+        void performColorPassRendering(
+            const Tick &tick,
+            const Camera &camera,
+            uint32_t textureId
+        );
 
         void performRendering(
             const Tick &tick,
@@ -50,6 +71,8 @@ namespace PineEngine {
 
         Transform transform;
         ResourceHandler<GeometryBuffer> geometry;
+        ResourceHandler<GraphicShader> positionPassShader;
+        ResourceHandler<GraphicShader> colorPassShader;
         ResourceHandler<GraphicShader> graphicShader;
         ResourceHandler<ComputeShader> computeShader;
     };

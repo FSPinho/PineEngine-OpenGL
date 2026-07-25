@@ -8,7 +8,7 @@ namespace PineEngine {
         explicit Renderer(RendererBackend &backend);
         ~Renderer();
 
-        void startFrame();
+        void clearFrame();
         void commitFrame();
 
     private:

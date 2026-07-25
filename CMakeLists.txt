@@ -36,6 +36,8 @@ add_library(
         src/PineEngine/rendering/Shading/GraphicShader/GraphicShader.cpp
         src/PineEngine/rendering/Shading/ComputeShader/ComputeShader.h
         src/PineEngine/rendering/Shading/ComputeShader/ComputeShader.cpp
+        src/PineEngine/rendering/FrameBuffer/FrameBuffer.h
+        src/PineEngine/rendering/FrameBuffer/FrameBuffer.cpp
 
         src/PineEngine/application/Application/Application.h
         src/PineEngine/application/Application/Application.cpp
