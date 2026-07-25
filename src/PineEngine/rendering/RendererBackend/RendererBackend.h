@@ -10,6 +10,7 @@ namespace PineEngine {
     public:
         explicit RendererBackend(Platform &platform);
         ~RendererBackend();
+
         void clearFrame();
         void swapBuffers();
 

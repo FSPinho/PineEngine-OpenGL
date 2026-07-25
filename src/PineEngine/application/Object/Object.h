@@ -34,7 +34,8 @@ namespace PineEngine {
         void performRendering(
             const Tick &tick,
             const Camera &camera,
-            const std::vector<PointLight> &pointLights
+            const std::vector<PointLight> &pointLights,
+            const std::vector<DirectionalLight> &directionalLights
         );
 
         bool operator==(const Object &other) const;

@@ -35,11 +35,23 @@ namespace PineEngine {
         }
     }
 
+    void Scene::addChild(DirectionalLight &&child) {
+        if (this->parent != nullptr) {
+            this->parent->addChild(std::move(child));
+        } else {
+            this->allChildrenDirectionalLights.push_back(child);
+        }
+    }
+
     std::vector<Object> &Scene::getObjects() {
         return this->allChildrenObjects;
     }
 
     std::vector<PointLight> &Scene::getPointLights() {
         return this->allChildrenPointLights;
+    }
+
+    std::vector<DirectionalLight> &Scene::getDirectionalLights() {
+        return this->allChildrenDirectionalLights;
     }
 } // namespace PineEngine

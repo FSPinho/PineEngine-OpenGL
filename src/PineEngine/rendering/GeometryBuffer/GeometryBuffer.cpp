@@ -1,6 +1,7 @@
 #include "GeometryBuffer.h"
 
 #include <PineEngine/util/OcclusionMap/OcclusionMap.h>
+#include <PineEngine/util/Timer/Timer.h>
 #include <stdexcept>
 #include <numbers>
 #include <string>
@@ -36,6 +37,8 @@ namespace PineEngine {
     void GeometryBuffer::calculateLightInfluence(const std::vector<float> &lightPositions) {
         if (this->hasCalculatedLightInfluence) return;
 
+        Timer t;
+
         for (uint32_t lightIndex = 0; lightIndex < lightPositions.size(); lightIndex += 3) {
             LOG(FORMAT("Processing light {}/{}", (lightIndex / 3) + 1, lightPositions.size() / 3));
 
@@ -59,6 +62,9 @@ namespace PineEngine {
                 this->verticesData[2].data[vertexIndex / 3] = static_cast<float>(flags);
             }
         }
+
+        const auto [elapsed, delta] = t.getNextTick();
+        LOG(FORMAT("Processed all lights in {:.4f} seconds", elapsed));
 
         this->_deleteGeometryFromGPU();
         this->_uploadGeometryToGPU();

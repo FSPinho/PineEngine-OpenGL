@@ -10,14 +10,27 @@ struct PointLight {
     vec3 translation;
     vec3 radiantIntensity;
 };
+struct DirectionalLight {
+    vec3 direction;
+    vec3 irradiance;
+};
 uniform PointLight POINT_LIGHTS[16];
+uniform DirectionalLight DIRECTIONAL_LIGHTS[16];
 uniform int POINT_LIGHTS_COUNT;
+uniform int DIRECTIONAL_LIGHTS_COUNT;
 uniform vec3 VIEW_POSITION;
 
 const float PI = 3.14159265359;
 const float GAMMA_CORRECTION = 1.0f / 2.2f;
 
-vec3 Lo_PointLight(int lightIndex, vec3 albedo, float roughness, vec3 reflectance, float metallic);
+vec3 Lo(
+        vec3 L_vec,
+        vec3 Li,
+        vec3 albedo,
+        float roughness,
+        vec3 reflectance,
+        float metallic
+);
 vec3 Li_PointLight(vec3 I, float L_r);
 float GGX_Trowbridge_Reitz(float roughness, float N_dot_H);
 float Schlick_GGZ(float roughness, float N_dot_V, float N_dot_L);
@@ -25,28 +38,43 @@ vec3 fresnel(vec3 F0, float V_dot_H);
 vec3 ACES(vec3 x);
 
 void main() {
-    vec3 albedo = vec3(0.9f, 0.9f, 0.9f);
+    vec3 albedo = vec3(1.0f, 1.0f, 1.0f);
     vec3 outColor = vec3(0.0f, 0.0f, 0.0f);
-    float roughness = 1.0;
+    float roughness = 0.5;
     vec3 reflectance = vec3(0.04);
     float metallic = 0.0;
+    float expousure = 1.0 / pow(2, 9.75);
 
     for (int i = 0; i < POINT_LIGHTS_COUNT; i++) {
-        outColor += Lo_PointLight(i, albedo, roughness, reflectance, metallic) * vertexOutLightInfluence[i];
+        vec3 I = POINT_LIGHTS[i].radiantIntensity;
+        vec3 L_vec = POINT_LIGHTS[i].translation - vertexOutWorldPos.xyz;
+        float L_r = length(L_vec);
+        vec3 Li = Li_PointLight(I, L_r);
+
+        outColor += Lo(L_vec, Li, albedo, roughness, reflectance, metallic); // * vertexOutLightInfluence[i];
     }
 
-    outColor = ACES(outColor);
+    for (int i = 0; i < DIRECTIONAL_LIGHTS_COUNT; i++) {
+        vec3 L_vec = DIRECTIONAL_LIGHTS[i].direction;
+        vec3 I = DIRECTIONAL_LIGHTS[i].irradiance;
+        vec3 Li = I;
+        outColor += Lo(L_vec, Li, albedo, roughness, reflectance, metallic);
+    }
+
+    outColor = ACES(outColor * expousure);
     fragmentOutColor = vec4(pow(outColor, vec3(GAMMA_CORRECTION)), 1.0f);
 }
 
-vec3 Lo_PointLight(int lightIndex, vec3 albedo, float roughness, vec3 reflectance, float metallic) {
-    // ...
-    vec3 L_vec = POINT_LIGHTS[lightIndex].translation - vertexOutWorldPos.xyz;
-
-    // ...
-    vec3 I = POINT_LIGHTS[lightIndex].radiantIntensity;
+vec3 Lo(
+        vec3 L_vec,
+        vec3 Li,
+        vec3 albedo,
+        float roughness,
+        vec3 reflectance,
+        float metallic
+) {
     vec3 L = normalize(L_vec);
-    float L_r = length(L_vec);
+
     vec3 V = normalize(VIEW_POSITION - vertexOutWorldPos.xyz);
     vec3 N = vertexOutNormal.xyz;
     vec3 H = normalize(L + V);
@@ -62,9 +90,6 @@ vec3 Lo_PointLight(int lightIndex, vec3 albedo, float roughness, vec3 reflectanc
     float D = GGX_Trowbridge_Reitz(roughness, N_dot_H);
     float G = Schlick_GGZ(roughness, N_dot_V, N_dot_L);
     vec3 F = fresnel(reflectance, V_dot_H);
-
-    // Incoming light radiance
-    vec3 Li = Li_PointLight(I, L_r);
 
     // Specular
     vec3 specular = (D * F * G) / (4.0f * N_dot_L * N_dot_V + epsilon);

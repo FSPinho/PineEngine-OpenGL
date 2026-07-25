@@ -17,14 +17,19 @@ namespace PineEngine {
 
     void Application::mainLoop(const std::function<void(const Tick &)> &onTick) {
         this->platform.mainLoop([this, onTick] {
-            auto const tick = this->timer.getNextTick();
+            const auto tick = this->timer.getNextTick();
 
             this->inputManager.preProcessMouseEvents(tick);
 
             this->renderer.startFrame();
 
-            for (auto &object: this->getRootScene().getObjects()) {
-                object.performRendering(tick, this->camera, this->getRootScene().getPointLights());
+            for (auto &object: this->rootScene.getObjects()) {
+                object.performRendering(
+                    tick,
+                    this->camera,
+                    this->rootScene.getPointLights(),
+                    this->rootScene.getDirectionalLights()
+                );
             }
 
             this->renderer.commitFrame();

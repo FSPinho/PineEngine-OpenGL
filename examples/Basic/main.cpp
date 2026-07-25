@@ -13,31 +13,20 @@ int main() {
 
         auto composed_001 = Object();
         composed_001.setGeometry<GeometryBuffer>(Path::inDisk("models/composed_002.glb"), rb);
-        // composed_001.getGeometry().enableWireframe();
         composed_001.setShaderSet<ShaderSet>(Path::inDisk("shaders/pbm"), rb);
         application.getRootScene().addChild(std::move(composed_001));
 
-        std::vector<PointLight> lights;
-        uint32_t lightCount = 8;
-        for (uint32_t i = 0; i < lightCount; i++) {
-            float progress = static_cast<float>(i) / static_cast<float>(lightCount - 1);
-            float x = 4.0f * (progress * 2.0f - 1.0f);
-            LOG(FORMAT("X={}", x));
-            float r = 10.0f * static_cast<float>(i) / static_cast<float>(lightCount);
-            float b = 10.0f - r;
-            lights.emplace_back(PointLight{
-                .translation = {x, 4.0f, 2.0f}, .radiantIntensity = {0.0f + r, 10.0f, 0.0f + b}
-            });
-        }
+        std::vector<DirectionalLight> dLights{
+            {.direction = {4.0f, 3.0f, 2.0f}, .irradiance = {1000.0f, 1000.0f, 1000.0f}},
+        };
+        std::vector<PointLight> pLights{
+            // {.translation = {4.0f, 4.0f, 4.0f}, .radiantIntensity = {60.0f, 60.0f, 60.0f}},
+        };
 
-        for (auto light: lights) {
-            auto lightRef = Object();
-            lightRef.getTransform()
-                    .moveTo(glm::vec3(light.translation[0], light.translation[1], light.translation[2]))
-                    .scaleTo(0.2);;
-            lightRef.setGeometry<GeometryBuffer>(Path::inMemory("geo/1"), GeometryPreset::BOX, rb);
-            lightRef.setShaderSet<ShaderSet>(Path::inDisk("shaders/light"), rb);
-            application.getRootScene().addChild(std::move(lightRef));
+        for (auto &light: dLights) {
+            application.getRootScene().addChild(std::move(light));
+        }
+        for (auto &light: pLights) {
             application.getRootScene().addChild(std::move(light));
         }
 

@@ -14,9 +14,11 @@ namespace PineEngine {
         void addChild(Scene &&child);
         void addChild(Object &&child);
         void addChild(PointLight &&child);
+        void addChild(DirectionalLight &&child);
 
         std::vector<Object>& getObjects();
         std::vector<PointLight>& getPointLights();
+        std::vector<DirectionalLight>& getDirectionalLights();
 
     private:
         ID id;
@@ -25,10 +27,11 @@ namespace PineEngine {
 
         std::vector<ID> childrenScenes;
         std::vector<ID> childrenObjects;
-        std::vector<ID> childrenPointLights;
+        std::vector<ID> childrenDirectionalLights;
 
         std::vector<Scene> allChildrenScenes;
         std::vector<Object> allChildrenObjects;
         std::vector<PointLight> allChildrenPointLights;
+        std::vector<DirectionalLight> allChildrenDirectionalLights;
     };
 } // namespace PineEngine

@@ -13,8 +13,12 @@ namespace PineEngine {
         return *(this->geometry);
     }
 
-    void Object::performRendering(const Tick &tick, const Camera &camera,
-                                  const std::vector<PointLight> &pointLights) {
+    void Object::performRendering(
+        const Tick &tick,
+        const Camera &camera,
+        const std::vector<PointLight> &pointLights,
+        const std::vector<DirectionalLight> &directionalLights
+    ) {
         if (this->shaderSet) {
             this->shaderSet->setUniform("TIME", static_cast<float>(tick.elapsed));
             this->shaderSet->setUniform("MODEL_MATRIX", this->transform.getMatrix());
@@ -26,11 +30,20 @@ namespace PineEngine {
                 "POINT_LIGHTS_COUNT",
                 std::vector{static_cast<uint32_t>(pointLights.size())}
             );
+            this->shaderSet->setUniform(
+                "DIRECTIONAL_LIGHTS_COUNT",
+                std::vector{static_cast<uint32_t>(directionalLights.size())}
+            );
 
             for (uint32_t i = 0; i < pointLights.size(); i++) {
                 std::string prefix = std::string("POINT_LIGHTS[") + std::to_string(i) + "].";
                 this->shaderSet->setUniform(prefix + "translation", pointLights[i].translation);
                 this->shaderSet->setUniform(prefix + "radiantIntensity", pointLights[i].radiantIntensity);
+            }
+            for (uint32_t i = 0; i < directionalLights.size(); i++) {
+                std::string prefix = std::string("DIRECTIONAL_LIGHTS[") + std::to_string(i) + "].";
+                this->shaderSet->setUniform(prefix + "direction", directionalLights[i].direction);
+                this->shaderSet->setUniform(prefix + "irradiance", directionalLights[i].irradiance);
             }
 
             this->shaderSet->performRendering();
@@ -42,7 +55,7 @@ namespace PineEngine {
                 lightPositions.push_back(light.translation[1]);
                 lightPositions.push_back(light.translation[2]);
             }
-            this->geometry->calculateLightInfluence(lightPositions);
+            // this->geometry->calculateLightInfluence(lightPositions);
             this->geometry->performRendering();
         }
     }

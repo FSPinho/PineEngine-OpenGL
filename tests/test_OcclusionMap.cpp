@@ -1,10 +1,11 @@
 #include <PineEngine/util/OcclusionMap/OcclusionMap.h>
 #include <catch2/catch_test_macros.hpp>
+#include <numbers>
 
 
 TEST_CASE("OcclusionMap") {
     SECTION("Case 1") {
-        PineEngine::OcclusionMap map({0.0f, 10.0f, 0.0f}, std::numbers::pi / 180.0);
+        PineEngine::OcclusionMap map({0.0f, 10.0f, 0.0f}, 0.1);
 
         const std::vector vertices{
             1.0f, 1.0f, 1.0f,
@@ -18,7 +19,7 @@ TEST_CASE("OcclusionMap") {
     }
 
     SECTION("Case 2") {
-        PineEngine::OcclusionMap map({0.5f, 10.0f, 0.5f}, std::numbers::pi / 4.0);
+        PineEngine::OcclusionMap map({0.5f, 10.0f, 0.5f}, 0.1);
 
         const std::vector vertices{
             -1.0f, 0.0f, -1.0f,
