@@ -30,8 +30,8 @@ namespace PineEngine {
             throw std::runtime_error(FORMAT("Failed to load model \"{}\"!", path_));
         }
 
-        VertexData vertices{.name = "vertexInPosition", .data = {}, .dimensionality = 3};
-        VertexData normals{.name = "vertexInNormal", .data = {}, .dimensionality = 3};
+        VertexData vertices{.name = "vertexInPosition", .data = {}, .dimensionality = 4};
+        VertexData normals{.name = "vertexInNormal", .data = {}, .dimensionality = 4};
         std::vector<uint32_t> indices;
 
         uint32_t indexOffset = 0;
@@ -42,9 +42,11 @@ namespace PineEngine {
                 vertices.data.push_back(mesh->mVertices[vi].x);
                 vertices.data.push_back(mesh->mVertices[vi].y);
                 vertices.data.push_back(mesh->mVertices[vi].z);
+                vertices.data.push_back(1.0);
                 normals.data.push_back(mesh->mNormals[vi].x);
                 normals.data.push_back(mesh->mNormals[vi].y);
                 normals.data.push_back(mesh->mNormals[vi].z);
+                normals.data.push_back(0.0);
             }
 
             for (uint32_t fi = 0; fi < mesh->mNumFaces; fi++) {

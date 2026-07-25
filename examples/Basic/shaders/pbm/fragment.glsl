@@ -43,7 +43,7 @@ void main() {
     float roughness = 0.5;
     vec3 reflectance = vec3(0.04);
     float metallic = 0.0;
-    float expousure = 1.0 / pow(2, 9.75);
+    float expousure = 1.0; // / pow(2, 9.75);
 
     for (int i = 0; i < POINT_LIGHTS_COUNT; i++) {
         vec3 I = POINT_LIGHTS[i].radiantIntensity;
@@ -51,7 +51,7 @@ void main() {
         float L_r = length(L_vec);
         vec3 Li = Li_PointLight(I, L_r);
 
-        outColor += Lo(L_vec, Li, albedo, roughness, reflectance, metallic); // * vertexOutLightInfluence[i];
+        outColor += Lo(L_vec, Li, albedo, roughness, reflectance, metallic) * vertexOutLightInfluence[i];
     }
 
     for (int i = 0; i < DIRECTIONAL_LIGHTS_COUNT; i++) {

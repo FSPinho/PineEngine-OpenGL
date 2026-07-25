@@ -30,6 +30,19 @@ namespace PineEngine {
         }
     }
 
+    void GeometryBuffer::prepareForCompute() {
+        this->backend.bindDataBufferToCompute(this->verticesBufferId, 0);
+        this->backend.bindDataBufferToCompute(this->indicesBufferId, 1);
+    }
+
+    uint32_t GeometryBuffer::getVertexCount() {
+        return this->verticesData[0].data.size() / this->verticesData[0].dimensionality;
+    }
+
+    uint32_t GeometryBuffer::getIndexCount() {
+        return this->indicesCount / 3;
+    }
+
     void GeometryBuffer::enableWireframe() {
         this->wireFrameEnabled = true;
     }
@@ -76,8 +89,8 @@ namespace PineEngine {
         std::tie(this->verticesData, this->indices) = this->loader.load();
         this->verticesData.push_back({
             .name = "vertexInLightInfluence",
-            .data = std::vector(this->verticesData[0].data.size() / this->verticesData[0].dimensionality, 0.0f),
-            .dimensionality = 1
+            .data = std::vector(this->verticesData[0].data.size(), 0.0f),
+            .dimensionality = 4
         });
 
         this->_validateGeometry();

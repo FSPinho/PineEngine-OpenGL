@@ -15,6 +15,11 @@ namespace PineEngine {
 
         void performRendering() override;
 
+        void prepareForCompute();
+
+        uint32_t getVertexCount();
+        uint32_t getIndexCount();
+
         void enableWireframe();
 
         void calculateLightInfluence(const std::vector<float> &lightPositions);

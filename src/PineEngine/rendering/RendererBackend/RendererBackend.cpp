@@ -114,6 +114,10 @@ namespace PineEngine {
                                   dataOffset));
     }
 
+    void RendererBackend::bindDataBufferToCompute(const uint32_t dataBufferId, const uint32_t attributeIndex) {
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, attributeIndex, dataBufferId);
+    }
+
     void RendererBackend::bindIndexDataBufferToGeometry(const uint32_t geometryId, const uint32_t dataBufferId) {
         glBindVertexArray(geometryId);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dataBufferId);
@@ -121,8 +125,10 @@ namespace PineEngine {
         this->_debugMethod(FORMAT("Bound data buffer {} to geometry {}", dataBufferId, geometryId));
     }
 
-    uint32_t RendererBackend::createShaders(const std::string &vertexShaderCode,
-                                            const std::string &fragmentShaderCode) {
+    uint32_t RendererBackend::createShaders(
+        const std::string &vertexShaderCode,
+        const std::string &fragmentShaderCode
+    ) {
         const uint32_t vertexShaderId = this->_loadShader(vertexShaderCode, GL_VERTEX_SHADER);
         const uint32_t fragmentShaderId = this->_loadShader(fragmentShaderCode, GL_FRAGMENT_SHADER);
 
@@ -142,6 +148,29 @@ namespace PineEngine {
 
         glDeleteShader(vertexShaderId);
         glDeleteShader(fragmentShaderId);
+
+        this->_debugMethod(FORMAT("Created shaders {}", shaderProgramId));
+
+        return shaderProgramId;
+    }
+
+    uint32_t RendererBackend::createComputeShader(const std::string &computeShaderCode) {
+        const uint32_t computeShaderId = this->_loadShader(computeShaderCode, GL_COMPUTE_SHADER);
+
+        const uint32_t shaderProgramId = glCreateProgram();
+        glAttachShader(shaderProgramId, computeShaderId);
+        glLinkProgram(shaderProgramId);
+
+        int success;
+        char infoLog[512];
+        glGetProgramiv(shaderProgramId, GL_LINK_STATUS, &success);
+
+        if (!success) {
+            glGetProgramInfoLog(shaderProgramId, 512, nullptr, infoLog);
+            throw std::runtime_error(std::string("Failed to link shader program\n") + infoLog);
+        }
+
+        glDeleteShader(computeShaderId);
 
         this->_debugMethod(FORMAT("Created shaders {}", shaderProgramId));
 
@@ -206,6 +235,22 @@ namespace PineEngine {
         glUniformMatrix4fv(static_cast<GLint>(uniformLocation), 1, GL_FALSE, glm::value_ptr(value));
 
         this->_debugMethod("Set uniform", true);
+    }
+
+    void RendererBackend::executeComputeShader(const uint32_t shaderId, const uint32_t &x, const uint32_t &y) {
+        glUseProgram(shaderId);
+
+        for (uint32_t xi = 0; xi < x; xi += 0xFFFF) {
+            this->setUniform(shaderId, "X_OFFSET", std::vector{static_cast<float>(xi)});
+            for (uint32_t yi = 0; yi < y; yi += 0xFFFF) {
+                this->setUniform(shaderId, "Y_OFFSET", std::vector{static_cast<float>(yi)});
+                glDispatchCompute(std::min(x - xi, 0xFFFFu), std::min(y - yi, 0xFFFFu), 1);
+            }
+        }
+    }
+
+    void RendererBackend::waitComputeShader() {
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
     void RendererBackend::drawTriangles(const uint32_t vertexCount) {

@@ -3,7 +3,8 @@
 #include <PineEngine/application/Camera/Camera.h>
 #include <PineEngine/application/Light/Light.h>
 #include <PineEngine/rendering/GeometryBuffer/GeometryBuffer.h>
-#include <PineEngine/rendering/ShaderSet/ShaderSet.h>
+#include <PineEngine/rendering/Shading/ComputeShader/ComputeShader.h>
+#include <PineEngine/rendering/Shading/GraphicShader/GraphicShader.h>
 #include <PineEngine/util/ResourceHandler/ResourceHandler.h>
 #include <PineEngine/util/ResourceManager/ResourceManager.h>
 #include <PineEngine/util/Transform/Transform.h>
@@ -18,6 +19,7 @@ namespace PineEngine {
         ~Object();
 
         Transform &getTransform();
+        GeometryBuffer &getGeometry();
 
         template<typename T, typename... Args>
         void setGeometry(Args... args) {
@@ -25,11 +27,14 @@ namespace PineEngine {
         }
 
         template<typename T, typename... Args>
-        void setShaderSet(Args... args) {
-            this->shaderSet = ResourceManager::load<T>(args...);
+        void setGraphicShader(Args... args) {
+            this->graphicShader = ResourceManager::load<T>(args...);
         }
 
-        GeometryBuffer &getGeometry();
+        template<typename T, typename... Args>
+        void setComputeShader(Args... args) {
+            this->computeShader = ResourceManager::load<T>(args...);
+        }
 
         void performRendering(
             const Tick &tick,
@@ -45,6 +50,7 @@ namespace PineEngine {
 
         Transform transform;
         ResourceHandler<GeometryBuffer> geometry;
-        ResourceHandler<ShaderSet> shaderSet;
+        ResourceHandler<GraphicShader> graphicShader;
+        ResourceHandler<ComputeShader> computeShader;
     };
 } // namespace PineEngine

@@ -19,43 +19,66 @@ namespace PineEngine {
         const std::vector<PointLight> &pointLights,
         const std::vector<DirectionalLight> &directionalLights
     ) {
-        if (this->shaderSet) {
-            this->shaderSet->setUniform("TIME", static_cast<float>(tick.elapsed));
-            this->shaderSet->setUniform("MODEL_MATRIX", this->transform.getMatrix());
-            this->shaderSet->setUniform("VIEW_MATRIX", camera.getViewMatrix());
-            this->shaderSet->setUniform("VIEW_POSITION", camera.getTranslation());
-            this->shaderSet->setUniform("PROJECTION_MATRIX", camera.getProjectionMatrix());
+        if (this->geometry) {
+            if (this->computeShader) {
+                this->computeShader->setUniform(
+                    "POINT_LIGHTS_COUNT",
+                    std::vector{static_cast<uint32_t>(pointLights.size())}
+                );
+                this->computeShader->setUniform(
+                    "DIRECTIONAL_LIGHTS_COUNT",
+                    std::vector{static_cast<uint32_t>(directionalLights.size())}
+                );
 
-            this->shaderSet->setUniform(
+                for (uint32_t i = 0; i < pointLights.size(); i++) {
+                    std::string prefix = std::string("POINT_LIGHTS[") + std::to_string(i) + "].";
+                    this->computeShader->setUniform(prefix + "translation", pointLights[i].translation);
+                    this->computeShader->setUniform(prefix + "radiantIntensity", pointLights[i].radiantIntensity);
+                }
+                for (uint32_t i = 0; i < directionalLights.size(); i++) {
+                    std::string prefix = std::string("DIRECTIONAL_LIGHTS[") + std::to_string(i) + "].";
+                    this->computeShader->setUniform(prefix + "direction", directionalLights[i].direction);
+                    this->computeShader->setUniform(prefix + "irradiance", directionalLights[i].irradiance);
+                }
+
+                this->geometry->prepareForCompute();
+                this->computeShader->setInvocationCount(
+                    this->geometry->getVertexCount(),
+                    this->geometry->getIndexCount()
+                );
+                this->computeShader->prepareForRendering();
+            }
+        }
+        if (this->graphicShader) {
+            this->graphicShader->setUniform("TIME", static_cast<float>(tick.elapsed));
+            this->graphicShader->setUniform("MODEL_MATRIX", this->transform.getMatrix());
+            this->graphicShader->setUniform("VIEW_MATRIX", camera.getViewMatrix());
+            this->graphicShader->setUniform("VIEW_POSITION", camera.getTranslation());
+            this->graphicShader->setUniform("PROJECTION_MATRIX", camera.getProjectionMatrix());
+
+            this->graphicShader->setUniform(
                 "POINT_LIGHTS_COUNT",
                 std::vector{static_cast<uint32_t>(pointLights.size())}
             );
-            this->shaderSet->setUniform(
+            this->graphicShader->setUniform(
                 "DIRECTIONAL_LIGHTS_COUNT",
                 std::vector{static_cast<uint32_t>(directionalLights.size())}
             );
 
             for (uint32_t i = 0; i < pointLights.size(); i++) {
                 std::string prefix = std::string("POINT_LIGHTS[") + std::to_string(i) + "].";
-                this->shaderSet->setUniform(prefix + "translation", pointLights[i].translation);
-                this->shaderSet->setUniform(prefix + "radiantIntensity", pointLights[i].radiantIntensity);
+                this->graphicShader->setUniform(prefix + "translation", pointLights[i].translation);
+                this->graphicShader->setUniform(prefix + "radiantIntensity", pointLights[i].radiantIntensity);
             }
             for (uint32_t i = 0; i < directionalLights.size(); i++) {
                 std::string prefix = std::string("DIRECTIONAL_LIGHTS[") + std::to_string(i) + "].";
-                this->shaderSet->setUniform(prefix + "direction", directionalLights[i].direction);
-                this->shaderSet->setUniform(prefix + "irradiance", directionalLights[i].irradiance);
+                this->graphicShader->setUniform(prefix + "direction", directionalLights[i].direction);
+                this->graphicShader->setUniform(prefix + "irradiance", directionalLights[i].irradiance);
             }
 
-            this->shaderSet->performRendering();
+            this->graphicShader->prepareForRendering();
         }
         if (this->geometry) {
-            std::vector<float> lightPositions;
-            for (const auto &light: pointLights) {
-                lightPositions.push_back(light.translation[0]);
-                lightPositions.push_back(light.translation[1]);
-                lightPositions.push_back(light.translation[2]);
-            }
-            // this->geometry->calculateLightInfluence(lightPositions);
             this->geometry->performRendering();
         }
     }

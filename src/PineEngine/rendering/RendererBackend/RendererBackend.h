@@ -26,15 +26,25 @@ namespace PineEngine {
         void deleteDataBuffer(uint32_t id);
         void bindDataBufferToGeometry(uint32_t geometryId, uint32_t dataBufferId, uint32_t attributeIndex,
                                       uint32_t dimensionality, uint32_t combinedDimensionality, uint32_t dataOffset);
+        void bindDataBufferToCompute(uint32_t dataBufferId, uint32_t attributeIndex);
         void bindIndexDataBufferToGeometry(uint32_t geometryId, uint32_t dataBufferId);
 
-        uint32_t createShaders(const std::string &vertexShaderCode, const std::string &fragmentShaderCode);
+        uint32_t createShaders(
+            const std::string &vertexShaderCode,
+            const std::string &fragmentShaderCode
+        );
+        uint32_t createComputeShader(
+            const std::string &computeShaderCode
+        );
         void prepareShadersForRendering(uint32_t id);
         void deleteShaders(uint32_t id);
 
         void setUniform(uint32_t shaderId, const std::string &name, const std::vector<uint32_t> &value);
         void setUniform(uint32_t shaderId, const std::string &name, const std::vector<float> &value);
         void setUniform(uint32_t shaderId, const std::string &name, const glm::mat4 &value);
+
+        void executeComputeShader(uint32_t shaderId, const uint32_t &x, const uint32_t &y);
+        void waitComputeShader();
 
         void drawTriangles(uint32_t vertexCount);
         void drawWireframe(uint32_t vertexCount);

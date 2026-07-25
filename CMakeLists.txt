@@ -30,8 +30,12 @@ add_library(
         src/PineEngine/rendering/RendererComponent/RendererComponent.cpp
         src/PineEngine/rendering/GeometryBuffer/GeometryBuffer.h
         src/PineEngine/rendering/GeometryBuffer/GeometryBuffer.cpp
-        src/PineEngine/rendering/ShaderSet/ShaderSet.h
-        src/PineEngine/rendering/ShaderSet/ShaderSet.cpp
+        src/PineEngine/rendering/Shading/BaseShader/BaseShader.h
+        src/PineEngine/rendering/Shading/BaseShader/BaseShader.cpp
+        src/PineEngine/rendering/Shading/GraphicShader/GraphicShader.h
+        src/PineEngine/rendering/Shading/GraphicShader/GraphicShader.cpp
+        src/PineEngine/rendering/Shading/ComputeShader/ComputeShader.h
+        src/PineEngine/rendering/Shading/ComputeShader/ComputeShader.cpp
 
         src/PineEngine/application/Application/Application.h
         src/PineEngine/application/Application/Application.cpp
