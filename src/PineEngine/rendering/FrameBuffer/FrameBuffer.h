@@ -10,6 +10,7 @@ namespace PineEngine {
 
         void resize(uint32_t width_, uint32_t height_);
         uint32_t getColorTextureId();
+        uint32_t getDepthTextureId();
 
         void prepareForRendering();
 
@@ -18,9 +19,12 @@ namespace PineEngine {
         void performUnload() override;
 
     private:
-        uint32_t frameBufferId = 0;
-        uint32_t depthFrameBufferId = 0;
+        uint32_t colorFrameBufferId = 0;
         uint32_t colorTextureId = 0;
+
+        uint32_t depthFrameBufferId = 0;
+        uint32_t depthTextureId = 0;
+
         bool isLoaded = false;
 
         RendererBackend backend;

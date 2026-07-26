@@ -26,7 +26,7 @@ namespace PineEngine {
         void deleteDataBuffer(uint32_t id);
         void bindDataBufferToGeometry(uint32_t geometryId, uint32_t dataBufferId, uint32_t attributeIndex,
                                       uint32_t dimensionality, uint32_t combinedDimensionality, uint32_t dataOffset);
-        void bindDataBufferToCompute(uint32_t dataBufferId, uint32_t attributeIndex);
+        void bindDataBufferToShaderAccess(uint32_t dataBufferId, uint32_t attributeIndex);
         void bindIndexDataBufferToGeometry(uint32_t geometryId, uint32_t dataBufferId);
 
         uint32_t createShaders(
@@ -47,8 +47,9 @@ namespace PineEngine {
         void executeComputeShader(uint32_t shaderId, const uint32_t &x, const uint32_t &y);
         void waitComputeShader();
 
-        uint32_t createColorTexture();
+        uint32_t createTexture();
         void allocateColorTexture(uint32_t textureId, uint32_t width, uint32_t height);
+        void allocateDepthTexture(uint32_t textureId, uint32_t width, uint32_t height);
         void bindTextureForCompute(uint32_t textureId, uint32_t attributeIndex);
         void configureTextureFilterNearest(uint32_t textureId);
         void configureTextureClampToEdge(uint32_t textureId);
@@ -59,6 +60,7 @@ namespace PineEngine {
         void allocateDepthFrameBuffer(uint32_t frameBufferId, uint32_t width, uint32_t height);
         void attachColorTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId);
         void attachDepthTextureToFrameBuffer(uint32_t frameBufferId);
+        void attachDepthTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId);
         void prepareFrameBufferForRendering(uint32_t frameBufferId, uint32_t width, uint32_t height);
         void deleteFrameBuffer(uint32_t frameBufferId);
 

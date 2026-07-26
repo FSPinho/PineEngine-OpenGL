@@ -9,21 +9,26 @@ namespace PineEngine {
           renderer(this->rendererBackend),
           inputManager(this->platform),
           positionPassFrameBuffer(ResourceManager::load<FrameBuffer>(
-              Path::inMemory("frameBuffers/positionPass"),
+              Path::inMemory(),
               rendererBackend
           )) {
         LOG_CONSTRUCTOR("Application");
 
-        this->colorPassObject.setGeometry<GeometryBuffer>(
-            Path::inMemory("geometry/quad/1"),
+        this->renderProcessObject.setGeometry<GeometryBuffer>(
+            Path::inMemory(),
             GeometryPreset::QUAD,
             this->rendererBackend
         );
-        this->colorPassObject.setColorPassShader<GraphicShader>(
-            Path::inMemory("shaders/colorPass"),
+        this->renderProcessObject.setColorPassShader<GraphicShader>(
+            Path::inMemory(),
             Path::inDisk("shaders/colorPass/vertex.glsl"),
             Path::inDisk("shaders/colorPass/fragment.glsl"),
             rendererBackend
+        );
+        this->renderProcessObject.setShadowVolumeBuffer<VolumeBuffer>(Path::inMemory(), 32, this->rendererBackend);
+        this->renderProcessObject.setShadowComputeShader<ComputeShader>(
+            Path::inDisk("shaders/shadowVolume/compute.glsl"),
+            this->rendererBackend
         );
 
         this->platform.addResizeListener([this](const uint32_t width, const uint32_t height) {
@@ -49,10 +54,12 @@ namespace PineEngine {
                 object.performPositionPassRendering(tick, this->camera);
             }
 
+            this->renderProcessObject.performShadowVolumeComputing(this->positionPassFrameBuffer->getColorTextureId());
+
             // Color pass
             this->rendererBackend.prepareFrameBufferForRendering(0, width, height);
             this->renderer.clearFrame();
-            this->colorPassObject.performColorPassRendering(
+            this->renderProcessObject.performColorPassRendering(
                 tick,
                 this->camera,
                 this->positionPassFrameBuffer->getColorTextureId()

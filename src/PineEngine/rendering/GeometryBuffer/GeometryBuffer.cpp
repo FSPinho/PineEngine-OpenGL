@@ -31,8 +31,8 @@ namespace PineEngine {
     }
 
     void GeometryBuffer::prepareForCompute() {
-        this->backend.bindDataBufferToCompute(this->verticesBufferId, 0);
-        this->backend.bindDataBufferToCompute(this->indicesBufferId, 1);
+        this->backend.bindDataBufferToShaderAccess(this->verticesBufferId, 0);
+        this->backend.bindDataBufferToShaderAccess(this->indicesBufferId, 1);
     }
 
     uint32_t GeometryBuffer::getVertexCount() {

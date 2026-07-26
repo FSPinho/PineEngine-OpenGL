@@ -3,6 +3,7 @@
 #include <PineEngine/application/Camera/Camera.h>
 #include <PineEngine/application/Light/Light.h>
 #include <PineEngine/rendering/GeometryBuffer/GeometryBuffer.h>
+#include <PineEngine/rendering/VolumeBuffer/VolumeBuffer.h>
 #include <PineEngine/rendering/Shading/ComputeShader/ComputeShader.h>
 #include <PineEngine/rendering/Shading/GraphicShader/GraphicShader.h>
 #include <PineEngine/util/ResourceHandler/ResourceHandler.h>
@@ -42,8 +43,13 @@ namespace PineEngine {
         }
 
         template<typename T, typename... Args>
-        void setComputeShader(Args... args) {
-            this->computeShader = ResourceManager::load<T>(args...);
+        void setShadowVolumeBuffer(Args... args) {
+            this->shadowVolumeBuffer = ResourceManager::load<T>(args...);
+        }
+
+        template<typename T, typename... Args>
+        void setShadowComputeShader(Args... args) {
+            this->shadowComputeShader = ResourceManager::load<T>(args...);
         }
 
         void performPositionPassRendering(
@@ -54,8 +60,10 @@ namespace PineEngine {
         void performColorPassRendering(
             const Tick &tick,
             const Camera &camera,
-            uint32_t textureId
+            uint32_t positionTextureId
         );
+
+        void performShadowVolumeComputing(uint32_t positionTextureId);
 
         void performRendering(
             const Tick &tick,
@@ -66,6 +74,7 @@ namespace PineEngine {
 
         bool operator==(const Object &other) const;
 
+
     private:
         ID id;
 
@@ -74,6 +83,8 @@ namespace PineEngine {
         ResourceHandler<GraphicShader> positionPassShader;
         ResourceHandler<GraphicShader> colorPassShader;
         ResourceHandler<GraphicShader> graphicShader;
-        ResourceHandler<ComputeShader> computeShader;
+
+        ResourceHandler<VolumeBuffer> shadowVolumeBuffer;
+        ResourceHandler<ComputeShader> shadowComputeShader;
     };
 } // namespace PineEngine

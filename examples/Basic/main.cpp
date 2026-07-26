@@ -14,18 +14,17 @@ int main() {
         auto composed_001 = Object();
         composed_001.setGeometry<GeometryBuffer>(Path::inDisk("models/composed_002.glb"), rb);
         composed_001.setPositionPassShader<GraphicShader>(
-            Path::inMemory("shaders/1"),
+            Path::inMemory(),
             Path::inDisk("shaders/positionPass/vertex.glsl"),
             Path::inDisk("shaders/positionPass/fragment.glsl"),
             rb
         );
         composed_001.setGraphicShader<GraphicShader>(
-            Path::inMemory("shaders/2"),
+            Path::inMemory(),
             Path::inDisk("shaders/pbm/vertex.glsl"),
             Path::inDisk("shaders/pbm/fragment.glsl"),
             rb
         );
-        composed_001.setComputeShader<ComputeShader>(Path::inDisk("shaders/pbm/compute.glsl"), rb);
         application.getRootScene().addChild(std::move(composed_001));
 
         std::vector<DirectionalLight> dLights{

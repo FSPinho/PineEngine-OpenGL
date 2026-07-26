@@ -11,8 +11,9 @@ namespace PineEngine {
         ~ComputeShader() override;
 
         void setInvocationCount(uint32_t xInvocationCount_, uint32_t yInvocationCount_);
+        void bindTextureForCompute(uint32_t textureId, uint32_t attributeIndex);
 
-        void prepareForRendering() override;
+        void executeCompute();
 
     protected:
         uint32_t performShaderLoad() override;

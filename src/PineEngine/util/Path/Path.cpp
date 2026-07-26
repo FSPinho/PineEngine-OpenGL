@@ -1,6 +1,7 @@
 #include "Path.h"
 
 #include <stdexcept>
+#include <PineEngine/util/SerialID/SerialID.h>
 
 namespace PineEngine {
     Path::Path(const std::string &path) {
@@ -37,7 +38,9 @@ namespace PineEngine {
         return Path(this->asString() + "/" + other);
     }
 
-    Path Path::inMemory(const std::string &path) {
+    Path Path::inMemory() {
+        std::string path = "auto-generated";
+        path += std::to_string(SerialID::generate());
         return std::move(Path(std::string(CONFIG::IN_MEMORY_RESOURCE_PREFIX) + "/" + path));
     }
 

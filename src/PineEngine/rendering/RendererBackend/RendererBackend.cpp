@@ -114,7 +114,7 @@ namespace PineEngine {
                                   dataOffset));
     }
 
-    void RendererBackend::bindDataBufferToCompute(const uint32_t dataBufferId, const uint32_t attributeIndex) {
+    void RendererBackend::bindDataBufferToShaderAccess(const uint32_t dataBufferId, const uint32_t attributeIndex) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, attributeIndex, dataBufferId);
     }
 
@@ -195,11 +195,11 @@ namespace PineEngine {
         glUseProgram(shaderId);
 
         if (value.size() == 1) {
-            glUniform1i(static_cast<GLint>(uniformLocation), value[0]);
+            glUniform1ui(static_cast<GLint>(uniformLocation), value[0]);
         } else if (value.size() == 3) {
-            glUniform3i(static_cast<GLint>(uniformLocation), value[0], value[1], value[2]);
+            glUniform3ui(static_cast<GLint>(uniformLocation), value[0], value[1], value[2]);
         } else if (value.size() == 4) {
-            glUniform4i(static_cast<GLint>(uniformLocation), value[0], value[1], value[2], value[3]);
+            glUniform4ui(static_cast<GLint>(uniformLocation), value[0], value[1], value[2], value[3]);
         } else {
             throw std::runtime_error("Uniform size not implemented!");
         }
@@ -271,7 +271,7 @@ namespace PineEngine {
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
-    uint32_t RendererBackend::createColorTexture() {
+    uint32_t RendererBackend::createTexture() {
         uint32_t id;
         glGenTextures(1, &id);
         return id;
@@ -281,6 +281,12 @@ namespace PineEngine {
         glBindTexture(GL_TEXTURE_2D, textureId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         this->_debugMethod("Allocate color texture", true);
+    }
+
+    void RendererBackend::allocateDepthTexture(const uint32_t textureId, const uint32_t width, const uint32_t height) {
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        this->_debugMethod("Allocate depth texture", true);
     }
 
     void RendererBackend::bindTextureForCompute(const uint32_t textureId, const uint32_t attributeIndex) {
@@ -349,6 +355,13 @@ namespace PineEngine {
     void RendererBackend::attachDepthTextureToFrameBuffer(const uint32_t frameBufferId) {
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, frameBufferId);
+
+        this->_debugMethod("Attach depth texture to frame buffer", true);
+    }
+
+    void RendererBackend::attachDepthTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId) {
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, textureId, 0);
 
         this->_debugMethod("Attach depth texture to frame buffer", true);
     }

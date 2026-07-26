@@ -16,8 +16,11 @@ namespace PineEngine {
         this->yInvocationCount = yInvocationCount_;
     }
 
-    void ComputeShader::prepareForRendering() {
-        BaseShader::prepareForRendering();
+    void ComputeShader::bindTextureForCompute(const uint32_t textureId, uint32_t attributeIndex) {
+        this->backend.bindTextureForCompute(textureId, attributeIndex);
+    }
+
+    void ComputeShader::executeCompute() {
         this->backend.executeComputeShader(this->shadersId, this->xInvocationCount, this->yInvocationCount);
         this->backend.waitComputeShader();
     }
