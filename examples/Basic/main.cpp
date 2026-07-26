@@ -13,25 +13,25 @@ int main() {
 
         auto composed_001 = Object();
         composed_001.setGeometry<GeometryBuffer>(Path::inDisk("models/composed_002.glb"), rb);
-        composed_001.setPositionPassShader<GraphicShader>(
+        composed_001.setLightPassShader<GraphicShader>(
             Path::inMemory(),
-            Path::inDisk("shaders/positionPass/vertex.glsl"),
-            Path::inDisk("shaders/positionPass/fragment.glsl"),
+            Path::inDisk("shaders/PBR_LightPass/vertex.glsl"),
+            Path::inDisk("shaders/PBR_LightPass/fragment.glsl"),
             rb
         );
         composed_001.setGraphicShader<GraphicShader>(
             Path::inMemory(),
-            Path::inDisk("shaders/pbm/vertex.glsl"),
-            Path::inDisk("shaders/pbm/fragment.glsl"),
+            Path::inDisk("shaders/PBR_ColorPass/vertex.glsl"),
+            Path::inDisk("shaders/PBR_ColorPass/fragment.glsl"),
             rb
         );
         application.getRootScene().addChild(std::move(composed_001));
 
         std::vector<DirectionalLight> dLights{
-            // {.direction = {4.0f, 3.0f, 2.0f}, .irradiance = {1000.0f, 1000.0f, 1000.0f}},
+            {.direction = {4.0f, 1.0f, 2.0f}, .irradiance = {1000.0f, 1000.0f, 1000.0f}},
         };
         std::vector<PointLight> pLights{
-            {.translation = {4.0f, 4.0f, 4.0f}, .radiantIntensity = {60.0f, 60.0f, 60.0f}},
+            // {.translation = {4.0f, 4.0f, 4.0f}, .radiantIntensity = {60.0f, 60.0f, 60.0f}},
         };
 
         for (auto &light: dLights) {

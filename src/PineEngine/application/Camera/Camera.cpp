@@ -2,7 +2,19 @@
 
 namespace PineEngine {
     Camera::Camera(const glm::vec3 &translation, const glm::vec3 &target, const float &aspect, const float &fov)
-        : translation(translation), target(target), aspect(aspect), fov(fov) {
+        : translation(translation), target(target), aspect(aspect), fov(fov), isOrthographic(false) {
+    }
+
+    Camera::Camera(
+        const glm::vec3 &translation,
+        const glm::vec3 &target,
+        const float &left,
+        const float &right,
+        const float &bottom,
+        const float &top)
+        : translation(translation),
+          target(target), left(left), right(right), bottom(bottom),
+          top(top), isOrthographic(true) {
     }
 
     glm::mat4 Camera::getViewMatrix() const {
@@ -15,7 +27,11 @@ namespace PineEngine {
 
     glm::mat4 Camera::getProjectionMatrix() const {
         if (this->shouldRecomputeProjectionMatrix) {
-            this->projectionMatrix = glm::perspective(this->fov, this->aspect, 0.1f, 100.0f);
+            if (this->isOrthographic) {
+                this->projectionMatrix = glm::ortho(this->left, this->right, this->bottom, this->top, 0.1f, 100.0f);
+            } else {
+                this->projectionMatrix = glm::perspective(this->fov, this->aspect, 0.1f, 100.0f);
+            }
             this->shouldRecomputeProjectionMatrix = false;
         }
         return this->projectionMatrix;
@@ -28,6 +44,10 @@ namespace PineEngine {
 
     float Camera::getAspect() const {
         return this->aspect;
+    }
+
+    const glm::vec3 &Camera::getTarget() const {
+        return this->target;
     }
 
     void Camera::move(const float &forward, const float &sideways) {

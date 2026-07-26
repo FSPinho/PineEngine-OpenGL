@@ -8,7 +8,7 @@ namespace PineEngine {
         : rendererBackend(this->platform),
           renderer(this->rendererBackend),
           inputManager(this->platform),
-          positionPassFrameBuffer(ResourceManager::load<FrameBuffer>(
+          lightPassFrameBuffer(ResourceManager::load<FrameBuffer>(
               Path::inMemory(),
               rendererBackend
           )) {
@@ -21,13 +21,13 @@ namespace PineEngine {
         );
         this->renderProcessObject.setColorPassShader<GraphicShader>(
             Path::inMemory(),
-            Path::inDisk("shaders/colorPass/vertex.glsl"),
-            Path::inDisk("shaders/colorPass/fragment.glsl"),
+            Path::inDisk("shaders/PBR_Quad_ColorPass/vertex.glsl"),
+            Path::inDisk("shaders/PBR_Quad_ColorPass/fragment.glsl"),
             rendererBackend
         );
         this->renderProcessObject.setShadowVolumeBuffer<VolumeBuffer>(Path::inMemory(), 32, this->rendererBackend);
         this->renderProcessObject.setShadowComputeShader<ComputeShader>(
-            Path::inDisk("shaders/shadowVolume/compute.glsl"),
+            Path::inDisk("shaders/PBR_LightPass/compute.glsl"),
             this->rendererBackend
         );
 
@@ -46,24 +46,37 @@ namespace PineEngine {
             this->inputManager.preProcessMouseEvents(tick);
 
             const auto [width, height] = this->platform.getSurfaceSize();
+            this->lightPassFrameBuffer->resize(width, height);
+            this->lightPassFrameBuffer->prepareForRendering();
 
-            // Position Pass
-            this->positionPassFrameBuffer->resize(width, height);
-            this->positionPassFrameBuffer->prepareForRendering();
-            for (auto &object: this->rootScene.getObjects()) {
-                object.performPositionPassRendering(tick, this->camera);
+            for (const auto &directionalLight: this->rootScene.getDirectionalLights()) {
+                const auto &target = this->camera.getTarget();
+                const auto &translation = glm::normalize(glm::vec3(
+                                              directionalLight.direction[0], directionalLight.direction[1],
+                                              directionalLight.direction[2]
+                                          )) * 50.0f;
+                Camera lightCamera(translation, target, -10.0f, 10.0f, -10.0f, 10.0f);
+                for (auto &object: this->rootScene.getObjects()) {
+                    object.performLightPass(tick, lightCamera);
+                }
+
+                this->renderProcessObject.performLightComputing(
+                    this->lightPassFrameBuffer->getDepthTextureId(),
+                    lightCamera
+                );
             }
-
-            this->renderProcessObject.performShadowVolumeComputing(this->positionPassFrameBuffer->getColorTextureId());
 
             // Color pass
             this->rendererBackend.prepareFrameBufferForRendering(0, width, height);
             this->renderer.clearFrame();
-            this->renderProcessObject.performColorPassRendering(
-                tick,
-                this->camera,
-                this->positionPassFrameBuffer->getColorTextureId()
-            );
+            // this->renderProcessObject.performColorPassRendering(
+            //     tick,
+            //     this->camera,
+            //     this->lightPassFrameBuffer->getDepthTextureId()
+            // );
+            for (auto &object: this->rootScene.getObjects()) {
+                object.performColorPass(tick, this->camera);
+            }
 
             this->renderer.commitFrame();
 

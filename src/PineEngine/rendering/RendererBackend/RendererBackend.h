@@ -52,6 +52,7 @@ namespace PineEngine {
         void allocateDepthTexture(uint32_t textureId, uint32_t width, uint32_t height);
         void bindTextureForCompute(uint32_t textureId, uint32_t attributeIndex);
         void configureTextureFilterNearest(uint32_t textureId);
+        void configureTextureFilterLinear(uint32_t textureId);
         void configureTextureClampToEdge(uint32_t textureId);
         void deleteTexture(uint32_t textureId);
 

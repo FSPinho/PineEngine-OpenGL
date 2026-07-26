@@ -28,8 +28,8 @@ namespace PineEngine {
         }
 
         template<typename T, typename... Args>
-        void setPositionPassShader(Args... args) {
-            this->positionPassShader = ResourceManager::load<T>(args...);
+        void setLightPassShader(Args... args) {
+            this->lightPassShader = ResourceManager::load<T>(args...);
         }
 
         template<typename T, typename... Args>
@@ -44,47 +44,44 @@ namespace PineEngine {
 
         template<typename T, typename... Args>
         void setShadowVolumeBuffer(Args... args) {
-            this->shadowVolumeBuffer = ResourceManager::load<T>(args...);
+            this->lightVolumeBuffer = ResourceManager::load<T>(args...);
         }
 
         template<typename T, typename... Args>
         void setShadowComputeShader(Args... args) {
-            this->shadowComputeShader = ResourceManager::load<T>(args...);
+            this->lightComputeShader = ResourceManager::load<T>(args...);
         }
 
-        void performPositionPassRendering(
+        void performLightPass(
             const Tick &tick,
             const Camera &camera
         );
 
-        void performColorPassRendering(
+        void performLightComputing(uint32_t lightDepthId, const Camera &camera);
+
+        void performColorPass(
             const Tick &tick,
-            const Camera &camera,
-            uint32_t positionTextureId
+            const Camera &camera
         );
 
-        void performShadowVolumeComputing(uint32_t positionTextureId);
-
-        void performRendering(
+        void performQuadColorPass(
             const Tick &tick,
             const Camera &camera,
-            const std::vector<PointLight> &pointLights,
-            const std::vector<DirectionalLight> &directionalLights
+            uint32_t colorTextureId
         );
 
         bool operator==(const Object &other) const;
-
 
     private:
         ID id;
 
         Transform transform;
         ResourceHandler<GeometryBuffer> geometry;
-        ResourceHandler<GraphicShader> positionPassShader;
+        ResourceHandler<GraphicShader> lightPassShader;
         ResourceHandler<GraphicShader> colorPassShader;
         ResourceHandler<GraphicShader> graphicShader;
 
-        ResourceHandler<VolumeBuffer> shadowVolumeBuffer;
-        ResourceHandler<ComputeShader> shadowComputeShader;
+        ResourceHandler<VolumeBuffer> lightVolumeBuffer;
+        ResourceHandler<ComputeShader> lightComputeShader;
     };
 } // namespace PineEngine

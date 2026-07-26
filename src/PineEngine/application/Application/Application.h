@@ -36,7 +36,7 @@ namespace PineEngine {
 
         Scene rootScene;
 
-        ResourceHandler<FrameBuffer> positionPassFrameBuffer;
+        ResourceHandler<FrameBuffer> lightPassFrameBuffer;
         Object renderProcessObject;
     };
 } // namespace PineEngine

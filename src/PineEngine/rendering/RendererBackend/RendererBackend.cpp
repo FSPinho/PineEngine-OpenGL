@@ -17,7 +17,7 @@ namespace PineEngine {
     }
 
     void RendererBackend::clearFrame() {
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -307,6 +307,14 @@ namespace PineEngine {
         glBindTexture(GL_TEXTURE_2D, textureId);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        this->_debugMethod("Configure texture filters", true);
+    }
+
+    void RendererBackend::configureTextureFilterLinear(const uint32_t textureId) {
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         this->_debugMethod("Configure texture filters", true);
     }

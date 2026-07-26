@@ -6,14 +6,6 @@ in vec4 vertexOutWorldPos;
 
 out vec4 fragmentOutColor;
 
-struct PointLight {
-    vec3 translation;
-    vec3 radiantIntensity;
-};
-struct DirectionalLight {
-    vec3 direction;
-    vec3 irradiance;
-};
 uniform PointLight POINT_LIGHTS[16];
 uniform DirectionalLight DIRECTIONAL_LIGHTS[16];
 uniform int POINT_LIGHTS_COUNT;
