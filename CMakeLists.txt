@@ -38,6 +38,8 @@ add_library(
         src/PineEngine/rendering/FrameBuffer/FrameBuffer.cpp
         src/PineEngine/rendering/VolumeBuffer/VolumeBuffer.h
         src/PineEngine/rendering/VolumeBuffer/VolumeBuffer.cpp
+        src/PineEngine/rendering/CubeMap/CubeMap.h
+        src/PineEngine/rendering/CubeMap/CubeMap.cpp
 
         src/PineEngine/application/Application/Application.h
         src/PineEngine/application/Application/Application.cpp

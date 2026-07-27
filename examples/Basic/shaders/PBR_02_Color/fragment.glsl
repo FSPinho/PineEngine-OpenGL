@@ -49,8 +49,9 @@ vec3 getShadowMapPos(vec4 position);
 void main() {
     // Material
     vec3 albedo = vec3(1.0f, 1.0f, 1.0f);
-    float roughness = 0.1;
+    float roughness = 0.2;
     vec3 reflectance = vec3(0.04);
+//    vec3 reflectance = vec3(1.000, 0.766, 0.336); // Gold
     float metallic = 0.0;
 
     // ...
