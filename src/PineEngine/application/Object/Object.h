@@ -4,7 +4,6 @@
 #include <PineEngine/application/Light/Light.h>
 #include <PineEngine/rendering/GeometryBuffer/GeometryBuffer.h>
 #include <PineEngine/rendering/VolumeBuffer/VolumeBuffer.h>
-#include <PineEngine/rendering/Shading/ComputeShader/ComputeShader.h>
 #include <PineEngine/rendering/Shading/GraphicShader/GraphicShader.h>
 #include <PineEngine/util/ResourceHandler/ResourceHandler.h>
 #include <PineEngine/util/ResourceManager/ResourceManager.h>
@@ -28,46 +27,35 @@ namespace PineEngine {
         }
 
         template<typename T, typename... Args>
-        void setLightPassShader(Args... args) {
-            this->lightPassShader = ResourceManager::load<T>(args...);
+        void setShadowMapShader(Args... args) {
+            this->shadowMapShader = ResourceManager::load<T>(args...);
         }
 
         template<typename T, typename... Args>
-        void setColorPassShader(Args... args) {
-            this->colorPassShader = ResourceManager::load<T>(args...);
+        void setColorShader(Args... args) {
+            this->colorShader = ResourceManager::load<T>(args...);
         }
 
-        template<typename T, typename... Args>
-        void setGraphicShader(Args... args) {
-            this->graphicShader = ResourceManager::load<T>(args...);
-        }
-
-        template<typename T, typename... Args>
-        void setShadowVolumeBuffer(Args... args) {
-            this->lightVolumeBuffer = ResourceManager::load<T>(args...);
-        }
-
-        template<typename T, typename... Args>
-        void setShadowComputeShader(Args... args) {
-            this->lightComputeShader = ResourceManager::load<T>(args...);
-        }
-
-        void performLightPass(
+        void performShadowMapPass(
             const Tick &tick,
-            const Camera &camera
+            const Camera &lightCamera
         );
-
-        void performLightComputing(uint32_t lightDepthId, const Camera &camera);
 
         void performColorPass(
             const Tick &tick,
-            const Camera &camera
+            const Camera &camera,
+            const Camera &lightCamera,
+            const DirectionalLight &directionalLight,
+            const uint32_t &shadowMapTextureId
         );
 
-        void performQuadColorPass(
-            const Tick &tick,
-            const Camera &camera,
-            uint32_t colorTextureId
+        void performAddColorPass(uint32_t colorTextureId, bool multisampled);
+
+        void performPostColorPass(
+            const uint32_t &addColorTextureId,
+            const std::vector<DirectionalLight> &directionalLights,
+            const std::vector<PointLight> &pointLights,
+            bool multisampled = false
         );
 
         bool operator==(const Object &other) const;
@@ -77,11 +65,7 @@ namespace PineEngine {
 
         Transform transform;
         ResourceHandler<GeometryBuffer> geometry;
-        ResourceHandler<GraphicShader> lightPassShader;
-        ResourceHandler<GraphicShader> colorPassShader;
-        ResourceHandler<GraphicShader> graphicShader;
-
-        ResourceHandler<VolumeBuffer> lightVolumeBuffer;
-        ResourceHandler<ComputeShader> lightComputeShader;
+        ResourceHandler<GraphicShader> shadowMapShader;
+        ResourceHandler<GraphicShader> colorShader;
     };
 } // namespace PineEngine

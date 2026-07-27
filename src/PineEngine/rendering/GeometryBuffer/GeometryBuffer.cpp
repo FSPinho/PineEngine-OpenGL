@@ -53,7 +53,7 @@ namespace PineEngine {
         Timer t;
 
         for (uint32_t lightIndex = 0; lightIndex < lightPositions.size(); lightIndex += 3) {
-            LOG(FORMAT("Processing light {}/{}", (lightIndex / 3) + 1, lightPositions.size() / 3));
+            LOG(FORMAT("Processing PBR_02_EmitterColor {}/{}", (lightIndex / 3) + 1, lightPositions.size() / 3));
 
             const glm::vec3 lightPos(
                 lightPositions[lightIndex],

@@ -50,11 +50,11 @@ namespace PineEngine {
                 vertices.data.push_back(mesh->mVertices[vi].x);
                 vertices.data.push_back(mesh->mVertices[vi].y);
                 vertices.data.push_back(mesh->mVertices[vi].z);
-                vertices.data.push_back(1.0);
+                vertices.data.push_back(1.0f);
                 normals.data.push_back(mesh->mNormals[vi].x);
                 normals.data.push_back(mesh->mNormals[vi].y);
                 normals.data.push_back(mesh->mNormals[vi].z);
-                normals.data.push_back(0.0);
+                normals.data.push_back(0.0f);
             }
 
             for (uint32_t fi = 0; fi < mesh->mNumFaces; fi++) {

@@ -1,6 +1,5 @@
 #version 330 core
 layout (location = 0) in vec4 vertexInPosition;
-layout (location = 1) in vec4 vertexInNormal;
 
 uniform mat4 MODEL_MATRIX;
 uniform mat4 VIEW_MATRIX;

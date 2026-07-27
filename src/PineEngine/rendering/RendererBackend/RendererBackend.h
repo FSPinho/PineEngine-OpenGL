@@ -11,7 +11,11 @@ namespace PineEngine {
         explicit RendererBackend(Platform &platform);
         ~RendererBackend();
 
-        void clearFrame();
+        void clearFrame(uint32_t frameBufferId = 0);
+        void clearColor(uint32_t frameBufferId = 0);
+        void clearDepth(uint32_t frameBufferId = 0);
+        void enableBlend();
+        void disableBlend();
         void swapBuffers();
 
         uint32_t createGeometry();
@@ -42,14 +46,14 @@ namespace PineEngine {
         void setUniform(uint32_t shaderId, const std::string &name, const std::vector<uint32_t> &value);
         void setUniform(uint32_t shaderId, const std::string &name, const std::vector<float> &value);
         void setUniform(uint32_t shaderId, const std::string &name, const glm::mat4 &value);
-        void setUniformTexture(uint32_t shaderId, const std::string &name, uint32_t textureId);
+        void setUniformTexture(uint32_t shaderId, const std::string &name, uint32_t textureId, bool multisampled = false);
 
         void executeComputeShader(uint32_t shaderId, const uint32_t &x, const uint32_t &y);
         void waitComputeShader();
 
         uint32_t createTexture();
-        void allocateColorTexture(uint32_t textureId, uint32_t width, uint32_t height);
-        void allocateDepthTexture(uint32_t textureId, uint32_t width, uint32_t height);
+        void allocateColorTexture(uint32_t textureId, uint32_t width, uint32_t height, bool multisampled = false);
+        void allocateDepthTexture(uint32_t textureId, uint32_t width, uint32_t height, bool multisampled = false);
         void bindTextureForCompute(uint32_t textureId, uint32_t attributeIndex);
         void configureTextureFilterNearest(uint32_t textureId);
         void configureTextureFilterLinear(uint32_t textureId);
@@ -57,17 +61,13 @@ namespace PineEngine {
         void deleteTexture(uint32_t textureId);
 
         uint32_t createFrameBuffer();
-        uint32_t createDepthFrameBuffer();
-        void allocateDepthFrameBuffer(uint32_t frameBufferId, uint32_t width, uint32_t height);
-        void attachColorTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId);
-        void attachDepthTextureToFrameBuffer(uint32_t frameBufferId);
-        void attachDepthTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId);
+        void attachColorTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId, bool multisampled = false);
+        void attachDepthTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId, bool multisampled = false);
         void prepareFrameBufferForRendering(uint32_t frameBufferId, uint32_t width, uint32_t height);
         void deleteFrameBuffer(uint32_t frameBufferId);
 
         void drawTriangles(uint32_t vertexCount);
         void drawWireframe(uint32_t vertexCount);
-
 
     private:
         Platform &platform;

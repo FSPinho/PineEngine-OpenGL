@@ -1,5 +1,7 @@
 #include "Object.h"
 
+#include <numbers>
+
 namespace PineEngine {
     Object::Object() : id(SerialID::generate()) {
         LOG_CONSTRUCTOR(FORMAT("Object[{}]", this->id));
@@ -13,66 +15,85 @@ namespace PineEngine {
         return *(this->geometry);
     }
 
-    void Object::performLightPass(const Tick &tick, const Camera &camera) {
-        if (this->lightPassShader) {
-            this->lightPassShader->setUniform("TIME", static_cast<float>(tick.elapsed));
-            this->lightPassShader->setUniform("MODEL_MATRIX", this->transform.getMatrix());
-            this->lightPassShader->setUniform("VIEW_MATRIX", camera.getViewMatrix());
-            this->lightPassShader->setUniform("VIEW_POSITION", camera.getTranslation());
-            this->lightPassShader->setUniform("PROJECTION_MATRIX", camera.getProjectionMatrix());
-            this->lightPassShader->prepareForRendering();
+    void Object::performShadowMapPass(const Tick &tick, const Camera &lightCamera) {
+        if (this->shadowMapShader) {
+            this->shadowMapShader->setUniform("TIME", static_cast<float>(tick.elapsed));
+            this->shadowMapShader->setUniform("MODEL_MATRIX", this->transform.getMatrix());
+            this->shadowMapShader->setUniform("VIEW_MATRIX", lightCamera.getViewMatrix());
+            this->shadowMapShader->setUniform("PROJECTION_MATRIX", lightCamera.getProjectionMatrix());
+            this->shadowMapShader->prepareForRendering();
         }
         if (this->geometry) {
             this->geometry->performRendering();
         }
     }
 
-    void Object::performLightComputing(const uint32_t lightDepthId, const Camera &camera) {
-        if (this->lightComputeShader && this->lightVolumeBuffer) {
-            constexpr uint32_t volumeBufferAttributeIndex = 0;
-            this->lightVolumeBuffer->prepareForCompute(volumeBufferAttributeIndex);
-            this->lightComputeShader->setInvocationCount(1, 1);
-            this->lightComputeShader->setUniformTexture("DEPTH", lightDepthId);
-            this->lightComputeShader->setUniform(
-                    "VOLUME_RESOLUTION",
-                    std::vector{this->lightVolumeBuffer->getResolution()}
-                );
-            this->lightComputeShader->setUniform("VIEW_MATRIX", camera.getViewMatrix());
-            this->lightComputeShader->setUniform("PROJECTION_MATRIX", camera.getProjectionMatrix());
-            this->lightComputeShader->prepareForRendering();
-            this->lightComputeShader->executeCompute();
-        }
-    }
+    void Object::performColorPass(
+        const Tick &tick,
+        const Camera &camera,
+        const Camera &lightCamera,
+        const DirectionalLight &directionalLight,
+        const uint32_t &shadowMapTextureId
+    ) {
+        if (this->colorShader) {
+            this->colorShader->setUniform("TIME", static_cast<float>(tick.elapsed));
+            this->colorShader->setUniform("MODEL_MATRIX", this->transform.getMatrix());
+            this->colorShader->setUniform("VIEW_MATRIX", camera.getViewMatrix());
+            this->colorShader->setUniform("VIEW_MATRIX_INVERSE", camera.getViewMatrixInverse());
+            this->colorShader->setUniform("VIEW_POSITION", camera.getTranslationAsArray());
+            this->colorShader->setUniform("PROJECTION_MATRIX", camera.getProjectionMatrix());
+            this->colorShader->setUniform("PROJECTION_MATRIX_INVERSE", camera.getProjectionMatrixInverse());
+            this->colorShader->setUniform("LIGHT_VIEW_MATRIX", lightCamera.getViewMatrix());
+            this->colorShader->setUniform("LIGHT_PROJECTION_MATRIX", lightCamera.getProjectionMatrix());
 
-    void Object::performColorPass(const Tick &tick, const Camera &camera) {
-        if (this->graphicShader) {
-            this->graphicShader->setUniform("TIME", static_cast<float>(tick.elapsed));
-            this->graphicShader->setUniform("MODEL_MATRIX", this->transform.getMatrix());
-            this->graphicShader->setUniform("VIEW_MATRIX", camera.getViewMatrix());
-            this->graphicShader->setUniform("VIEW_POSITION", camera.getTranslation());
-            this->graphicShader->setUniform("PROJECTION_MATRIX", camera.getProjectionMatrix());
-            this->graphicShader->prepareForRendering();
+            this->colorShader->setUniformTexture("SHADOW_MAP", shadowMapTextureId);
+
+            this->colorShader->setUniform("DIRECTIONAL_LIGHTS_COUNT", std::vector{1u});
+            this->colorShader->setUniform("POINT_LIGHTS_COUNT", std::vector{0u});
+            this->colorShader->setUniform("DIRECTIONAL_LIGHTS[0].direction", directionalLight.getDirectionAsArray());
+            this->colorShader->setUniform("DIRECTIONAL_LIGHTS[0].irradiance", directionalLight.getIrradianceAsArray());
+            // this->colorShader->setUniform(FORMAT("POINT_LIGHTS[{}].translation", i), pointLights[i].getTranslationAsArray());
+            // this->colorShader->setUniform(FORMAT("POINT_LIGHTS[{}].radiantIntensity", i), pointLights[i].getRadiantIntensityAsArray());
+
+            this->colorShader->prepareForRendering();
         }
         if (this->geometry) {
             this->geometry->performRendering();
         }
     }
 
-    void Object::performQuadColorPass(const Tick &tick, const Camera &camera, const uint32_t colorTextureId) {
-        if (this->colorPassShader) {
-            this->colorPassShader->setUniformTexture("COLOR", colorTextureId);
-            this->colorPassShader->setUniform("VIEW_MATRIX", camera.getViewMatrix());
-            this->colorPassShader->setUniform("PROJECTION_MATRIX", camera.getProjectionMatrix());
+    void Object::performAddColorPass(const uint32_t colorTextureId, const bool multisampled) {
+        if (this->colorShader) {
+            this->colorShader->setUniformTexture("COLOR", colorTextureId, multisampled);
+            this->colorShader->prepareForRendering();
+        }
+        if (this->geometry) {
+            this->geometry->performRendering();
+        }
+    }
 
-            if (this->lightVolumeBuffer) {
-                constexpr uint32_t volumeBufferAttributeIndex = 0;
-                this->lightVolumeBuffer->prepareForCompute(volumeBufferAttributeIndex);
-                this->colorPassShader->setUniform(
-                    "VOLUME_RESOLUTION",
-                    std::vector{this->lightVolumeBuffer->getResolution()}
-                );
-            }
-            this->colorPassShader->prepareForRendering();
+    void Object::performPostColorPass(
+        const uint32_t &colorTextureId,
+        const std::vector<DirectionalLight> &directionalLights,
+        const std::vector<PointLight> &pointLights,
+        const bool multisampled
+    ) {
+        float strongestLightIntensity = 0.0f;
+        for (const auto &light: directionalLights) {
+            strongestLightIntensity = std::max(strongestLightIntensity, glm::length(light.irradiance));
+        }
+        for (const auto &light: pointLights) {
+            strongestLightIntensity = std::max(
+                strongestLightIntensity,
+                glm::length(light.radiantIntensity) / std::pow(glm::length(light.translation), 2.0f)
+            );
+        }
+        const float exposure = 1.0f / (strongestLightIntensity / static_cast<float>(std::numbers::pi));
+
+        if (this->colorShader) {
+            this->colorShader->setUniformTexture("COLOR", colorTextureId, multisampled);
+            this->colorShader->setUniform("EXPOSURE", std::vector{exposure});
+            this->colorShader->prepareForRendering();
         }
         if (this->geometry) {
             this->geometry->performRendering();

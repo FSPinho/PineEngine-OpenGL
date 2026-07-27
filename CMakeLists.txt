@@ -22,8 +22,6 @@ add_library(
         src/PineEngine/platform/InputManager/InputManager.h
         src/PineEngine/platform/InputManager/InputManager.cpp
 
-        src/PineEngine/rendering/Renderer/Renderer.h
-        src/PineEngine/rendering/Renderer/Renderer.cpp
         src/PineEngine/rendering/RendererBackend/RendererBackend.h
         src/PineEngine/rendering/RendererBackend/RendererBackend.cpp
         src/PineEngine/rendering/RendererComponent/RendererComponent.h

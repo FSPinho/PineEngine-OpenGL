@@ -1,74 +1,87 @@
 #version 330 core
 
-in vec4 vertexOutNormal;
-in float vertexOutLightInfluence[16];
-in vec4 vertexOutWorldPos;
+// In/out
+in vec4 position;
+in vec4 normal;
+out vec4 color;
 
-out vec4 fragmentOutColor;
-
-uniform PointLight POINT_LIGHTS[16];
+// Uniforms
+struct DirectionalLight {
+    vec3 direction;
+    vec3 irradiance;
+};
+uniform uint DIRECTIONAL_LIGHTS_COUNT;
 uniform DirectionalLight DIRECTIONAL_LIGHTS[16];
-uniform int POINT_LIGHTS_COUNT;
-uniform int DIRECTIONAL_LIGHTS_COUNT;
-uniform vec3 VIEW_POSITION;
 
+struct PointLight {
+    vec3 translation;
+    vec3 radiantIntensity;
+};
+uniform uint POINT_LIGHTS_COUNT;
+uniform PointLight POINT_LIGHTS[16];
+
+uniform vec3 VIEW_POSITION;
+uniform mat4 LIGHT_VIEW_MATRIX;
+uniform mat4 LIGHT_PROJECTION_MATRIX;
+
+uniform sampler2D SHADOW_MAP;
+
+// Constants
 const float PI = 3.14159265359;
-const float GAMMA_CORRECTION = 1.0f / 2.2f;
 
 vec3 Lo(
-        vec3 L_vec,
-        vec3 Li,
-        vec3 albedo,
-        float roughness,
-        vec3 reflectance,
-        float metallic
+        vec3 N, vec3 L, vec3 V, vec3 Li,
+        vec3 albedo, float roughness, vec3 reflectance, float metallic
 );
 vec3 Li_PointLight(vec3 I, float L_r);
+vec3 Li_DirectionalLight(vec3 E);
 float GGX_Trowbridge_Reitz(float roughness, float N_dot_H);
 float Schlick_GGZ(float roughness, float N_dot_V, float N_dot_L);
 vec3 fresnel(vec3 F0, float V_dot_H);
-vec3 ACES(vec3 x);
 
 void main() {
+    // Material
     vec3 albedo = vec3(1.0f, 1.0f, 1.0f);
-    vec3 outColor = vec3(0.0f, 0.0f, 0.0f);
-    float roughness = 0.5;
+    float roughness = 0.1;
     vec3 reflectance = vec3(0.04);
     float metallic = 0.0;
-    float expousure = 1.0; // / pow(2, 9.75);
 
-    for (int i = 0; i < POINT_LIGHTS_COUNT; i++) {
+    // ...
+    vec3 V = normalize(VIEW_POSITION - position.xyz);
+    vec3 N = normalize(normal.xyz);
+
+    color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    for (uint i = 0u; i < POINT_LIGHTS_COUNT; i++) {
         vec3 I = POINT_LIGHTS[i].radiantIntensity;
-        vec3 L_vec = POINT_LIGHTS[i].translation - vertexOutWorldPos.xyz;
+        vec3 L_vec = POINT_LIGHTS[i].translation - position.xyz;
+        vec3 L = normalize(L_vec);
         float L_r = length(L_vec);
         vec3 Li = Li_PointLight(I, L_r);
 
-        outColor += Lo(L_vec, Li, albedo, roughness, reflectance, metallic) * vertexOutLightInfluence[i];
+        color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
     }
 
-    for (int i = 0; i < DIRECTIONAL_LIGHTS_COUNT; i++) {
-        vec3 L_vec = DIRECTIONAL_LIGHTS[i].direction;
-        vec3 I = DIRECTIONAL_LIGHTS[i].irradiance;
-        vec3 Li = I;
-        outColor += Lo(L_vec, Li, albedo, roughness, reflectance, metallic);
+    for (uint i = 0u; i < DIRECTIONAL_LIGHTS_COUNT; i++) {
+        vec3 L = normalize(DIRECTIONAL_LIGHTS[i].direction);
+        vec3 E = DIRECTIONAL_LIGHTS[i].irradiance;
+        vec3 Li = Li_DirectionalLight(E);
+
+        color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
     }
 
-    outColor = ACES(outColor * expousure);
-    fragmentOutColor = vec4(pow(outColor, vec3(GAMMA_CORRECTION)), 1.0f);
+    // Shadow
+    vec4 depthPos = LIGHT_PROJECTION_MATRIX * LIGHT_VIEW_MATRIX * position;
+    depthPos /= depthPos.w;
+    depthPos = depthPos * 0.5 + 0.5;
+    float depth = texture(SHADOW_MAP, depthPos.xy).r;
+    color.xyz *= depthPos.z <= depth + 1e-3 ? 1.0 : 0.0;
 }
 
 vec3 Lo(
-        vec3 L_vec,
-        vec3 Li,
-        vec3 albedo,
-        float roughness,
-        vec3 reflectance,
-        float metallic
+        vec3 N, vec3 L, vec3 V, vec3 Li,
+        vec3 albedo, float roughness, vec3 reflectance, float metallic
 ) {
-    vec3 L = normalize(L_vec);
-
-    vec3 V = normalize(VIEW_POSITION - vertexOutWorldPos.xyz);
-    vec3 N = vertexOutNormal.xyz;
     vec3 H = normalize(L + V);
     float epsilon = 0.000001;
 
@@ -92,8 +105,13 @@ vec3 Lo(
     return (diffuse + specular) * Li * N_dot_L;
 }
 
+
 vec3 Li_PointLight(vec3 I, float L_r) {
     return I / pow(L_r, 2.0f);
+}
+
+vec3 Li_DirectionalLight(vec3 E) {
+    return E;
 }
 
 float GGX_Trowbridge_Reitz(float roughness, float N_dot_H) {
@@ -117,11 +135,3 @@ vec3 fresnel(vec3 F0, float V_dot_H) {
     return F0 + (1.0f - F0) * pow(1.0f - V_dot_H, 5.0);
 }
 
-vec3 ACES(vec3 x) {
-    float a = 2.51;
-    float b = 0.03;
-    float c = 2.43;
-    float d = 0.59;
-    float e = 0.14;
-    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
-}

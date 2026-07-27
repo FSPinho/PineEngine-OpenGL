@@ -16,9 +16,31 @@ namespace PineEngine {
         LOG_DESTRUCTOR("RendererBackend");
     }
 
-    void RendererBackend::clearFrame() {
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    void RendererBackend::clearFrame(const uint32_t frameBufferId) {
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    void RendererBackend::clearColor(const uint32_t frameBufferId) {
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    void RendererBackend::clearDepth(const uint32_t frameBufferId) {
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_DEPTH_BUFFER_BIT);
+    }
+
+    void RendererBackend::enableBlend() {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
+    }
+
+    void RendererBackend::disableBlend() {
+        glDisable(GL_BLEND);
     }
 
     void RendererBackend::swapBuffers() {
@@ -240,14 +262,19 @@ namespace PineEngine {
     void RendererBackend::setUniformTexture(
         const uint32_t shaderId,
         const std::string &name,
-        const uint32_t textureId
+        const uint32_t textureId,
+        bool multisampled
     ) {
         const int32_t uniformLocation = this->_getUniformLocation(shaderId, name);
         if (uniformLocation == -1) return;
 
         glUseProgram(shaderId);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureId);
+        if (multisampled) {
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureId);
+        } else {
+            glBindTexture(GL_TEXTURE_2D, textureId);
+        }
         glUniform1i(uniformLocation, 0);
 
         this->_debugMethod("Set uniform texture", true);
@@ -277,15 +304,26 @@ namespace PineEngine {
         return id;
     }
 
-    void RendererBackend::allocateColorTexture(const uint32_t textureId, const uint32_t width, const uint32_t height) {
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    void RendererBackend::allocateColorTexture(const uint32_t textureId, const uint32_t width, const uint32_t height, const bool multisampled) {
+        if (multisampled) {
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureId);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA32F, width, height, GL_TRUE);
+        } else {
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        }
         this->_debugMethod("Allocate color texture", true);
     }
 
-    void RendererBackend::allocateDepthTexture(const uint32_t textureId, const uint32_t width, const uint32_t height) {
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    void RendererBackend::allocateDepthTexture(const uint32_t textureId, const uint32_t width, const uint32_t height, const bool multisampled) {
+        if (multisampled) {
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureId);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_DEPTH_COMPONENT32F, width, height, GL_TRUE);
+        } else {
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        }
+
         this->_debugMethod("Allocate depth texture", true);
     }
 
@@ -337,39 +375,26 @@ namespace PineEngine {
         return id;
     }
 
-    uint32_t RendererBackend::createDepthFrameBuffer() {
-        uint32_t id;
-        glGenRenderbuffers(1, &id);
-        return id;
-    }
-
-    void RendererBackend::allocateDepthFrameBuffer(
-        const uint32_t frameBufferId,
-        const uint32_t width,
-        const uint32_t height
-    ) {
-        glBindRenderbuffer(GL_RENDERBUFFER, frameBufferId);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-        this->_debugMethod("Allocate depth texture", true);
-    }
-
-    void RendererBackend::attachColorTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId) {
+    void RendererBackend::attachColorTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId, bool multisampled) {
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
+
+        if (multisampled) {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureId, 0);
+        } else {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
+        }
 
         this->_debugMethod("Attach color texture to frame buffer", true);
     }
 
-    void RendererBackend::attachDepthTextureToFrameBuffer(const uint32_t frameBufferId) {
+    void RendererBackend::attachDepthTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId, bool multisampled) {
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, frameBufferId);
 
-        this->_debugMethod("Attach depth texture to frame buffer", true);
-    }
-
-    void RendererBackend::attachDepthTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId) {
-        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, textureId, 0);
+        if (multisampled) {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, textureId, 0);
+        } else {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, textureId, 0);
+        }
 
         this->_debugMethod("Attach depth texture to frame buffer", true);
     }
@@ -449,7 +474,7 @@ namespace PineEngine {
         }
         if (const GLenum err = glGetError(); err != GL_NO_ERROR) {
             LOG_METHOD("RendererBackend - OpenGL Error: " << err);
-            throw std::runtime_error("Exiting due to OpenGL error!");
+            throw std::runtime_error(FORMAT("Exiting due to OpenGL error in \"{}\"", label));
         }
 #endif
     }
