@@ -8,6 +8,7 @@ namespace PineEngine {
         glm::vec3 translation;
         glm::vec3 radiantIntensity; // W/sr
         bool enableShadows = false;
+        bool enableSSAO = false;
 
         [[nodiscard]] std::vector<float> getTranslationAsArray() const {
             return {this->translation.x, this->translation.y, this->translation.z};
@@ -22,6 +23,7 @@ namespace PineEngine {
         glm::vec3 direction;
         glm::vec3 irradiance; // W/m2
         bool enableShadows = false;
+        bool enableSSAO = false;
 
         [[nodiscard]] std::vector<float> getDirectionAsArray() const {
             return {this->direction.x, this->direction.y, this->direction.z};

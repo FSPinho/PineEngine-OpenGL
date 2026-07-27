@@ -28,7 +28,11 @@ int main() {
         application.getRootScene().addChild(std::move(composed_001));
 
         std::vector<DirectionalLight> dLights{
-            {.direction = {1.0f, 4.0f, 1.0f}, .irradiance = {1000.0f, 1000.0f, 1000.0f}, .enableShadows = true},
+            {
+                .direction = {1.0f, 4.0f, 1.0f},
+                .irradiance = {1000.0f, 1000.0f, 1000.0f},
+                .enableShadows = false, .enableSSAO = true
+            },
             {.direction = {0.0f, -4.0f, -1.0f}, .irradiance = {250.0f, 250.0f, 250.0f}},
         };
         std::vector<PointLight> pLights{

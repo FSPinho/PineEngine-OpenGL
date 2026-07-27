@@ -49,18 +49,19 @@ namespace PineEngine {
 
             this->colorShader->setUniformTexture("SHADOW_MAP", shadowMapTextureId);
 
+            this->colorShader->setUniform("DIRECTIONAL_LIGHT.enabled", std::vector{directionalLight == nullptr ? 0u : 1u});
+            this->colorShader->setUniform("POINT_LIGHT.enabled", std::vector{pointLight == nullptr ? 0u : 1u});
+
             if (directionalLight != nullptr) {
-                this->colorShader->setUniform("ENABLE_SHADOWS", std::vector{static_cast<uint32_t>(directionalLight->enableShadows)});
-                this->colorShader->setUniform("DIRECTIONAL_LIGHTS_COUNT", std::vector{1u});
-                this->colorShader->setUniform("POINT_LIGHTS_COUNT", std::vector{0u});
-                this->colorShader->setUniform("DIRECTIONAL_LIGHTS[0].direction", directionalLight->getDirectionAsArray());
-                this->colorShader->setUniform("DIRECTIONAL_LIGHTS[0].irradiance", directionalLight->getIrradianceAsArray());
+                this->colorShader->setUniform("DIRECTIONAL_LIGHT.direction", directionalLight->getDirectionAsArray());
+                this->colorShader->setUniform("DIRECTIONAL_LIGHT.irradiance", directionalLight->getIrradianceAsArray());
+                this->colorShader->setUniform("DIRECTIONAL_LIGHT.enableShadows", std::vector{static_cast<uint32_t>(directionalLight->enableShadows)});
+                this->colorShader->setUniform("DIRECTIONAL_LIGHT.enableSSAO", std::vector{static_cast<uint32_t>(directionalLight->enableSSAO)});
             } else if (pointLight != nullptr) {
-                this->colorShader->setUniform("ENABLE_SHADOWS", std::vector{static_cast<uint32_t>(pointLight->enableShadows)});
-                this->colorShader->setUniform("DIRECTIONAL_LIGHTS_COUNT", std::vector{0u});
-                this->colorShader->setUniform("POINT_LIGHTS_COUNT", std::vector{1u});
-                this->colorShader->setUniform("POINT_LIGHTS[0].translation", pointLight->getTranslationAsArray());
-                this->colorShader->setUniform("POINT_LIGHTS[0].radiantIntensity", pointLight->getRadiantIntensityAsArray());
+                this->colorShader->setUniform("POINT_LIGHT.translation", pointLight->getTranslationAsArray());
+                this->colorShader->setUniform("POINT_LIGHT.radiantIntensity", pointLight->getRadiantIntensityAsArray());
+                this->colorShader->setUniform("POINT_LIGHT.enableShadows", std::vector{static_cast<uint32_t>(pointLight->enableShadows)});
+                this->colorShader->setUniform("POINT_LIGHT.enableSSAO", std::vector{static_cast<uint32_t>(pointLight->enableSSAO)});
             }
 
             this->colorShader->prepareForRendering();

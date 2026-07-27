@@ -7,25 +7,28 @@ out vec4 color;
 
 // Uniforms
 struct DirectionalLight {
+    uint enabled;
     vec3 direction;
     vec3 irradiance;
+    uint enableShadows;
+    uint enableSSAO;
 };
-uniform uint DIRECTIONAL_LIGHTS_COUNT;
-uniform DirectionalLight DIRECTIONAL_LIGHTS[16];
+uniform DirectionalLight DIRECTIONAL_LIGHT;
 
 struct PointLight {
+    uint enabled;
     vec3 translation;
     vec3 radiantIntensity;
+    uint enableShadows;
+    uint enableSSAO;
 };
-uniform uint POINT_LIGHTS_COUNT;
-uniform PointLight POINT_LIGHTS[16];
+uniform PointLight POINT_LIGHT;
 
 uniform vec3 VIEW_POSITION;
 uniform mat4 LIGHT_VIEW_MATRIX;
 uniform mat4 LIGHT_PROJECTION_MATRIX;
 
 uniform sampler2D SHADOW_MAP;
-uniform uint ENABLE_SHADOWS;
 
 // Constants
 const float PI = 3.14159265359;
@@ -39,7 +42,9 @@ vec3 Li_DirectionalLight(vec3 E);
 float GGX_Trowbridge_Reitz(float roughness, float N_dot_H);
 float Schlick_GGZ(float roughness, float N_dot_V, float N_dot_L);
 vec3 fresnel(vec3 F0, float V_dot_H);
-float getAttenuation(vec4 position);
+float getShadowAttenuation(vec4 position);
+float getSSAOAttenuation(vec4 position);
+vec3 getShadowMapPos(vec4 position);
 
 void main() {
     // Material
@@ -54,35 +59,36 @@ void main() {
 
     color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    for (uint i = 0u; i < POINT_LIGHTS_COUNT; i++) {
-        vec3 I = POINT_LIGHTS[i].radiantIntensity;
-        vec3 L_vec = POINT_LIGHTS[i].translation - position.xyz;
+    if (DIRECTIONAL_LIGHT.enabled == 1u) {
+        vec3 L = normalize(DIRECTIONAL_LIGHT.direction);
+        vec3 E = DIRECTIONAL_LIGHT.irradiance;
+        vec3 Li = Li_DirectionalLight(E);
+
+        color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
+
+        if (DIRECTIONAL_LIGHT.enableShadows != 0u) {
+            color.xyz *= getShadowAttenuation(position);
+        }
+        if (DIRECTIONAL_LIGHT.enableSSAO != 0u) {
+            color.xyz *= getSSAOAttenuation(position);
+        }
+    }
+
+    if (POINT_LIGHT.enabled == 1u) {
+        vec3 I = POINT_LIGHT.radiantIntensity;
+        vec3 L_vec = POINT_LIGHT.translation - position.xyz;
         vec3 L = normalize(L_vec);
         float L_r = length(L_vec);
         vec3 Li = Li_PointLight(I, L_r);
 
         color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
-    }
 
-    for (uint i = 0u; i < DIRECTIONAL_LIGHTS_COUNT; i++) {
-        vec3 L = normalize(DIRECTIONAL_LIGHTS[i].direction);
-        vec3 E = DIRECTIONAL_LIGHTS[i].irradiance;
-        vec3 Li = Li_DirectionalLight(E);
-
-        color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
-    }
-
-    // Shadow
-    if (ENABLE_SHADOWS != 0u) {
-        float attenuation = 0.0f;
-        float itCount = 0.0f;
-        for (float xo = -0.02; xo <= 0.02; xo += 0.01) {
-            for (float yo = -0.02; yo <= 0.02; yo += 0.01) {
-                attenuation += getAttenuation(position + vec4(xo, yo, 0.0, 0.0));
-                itCount++;
-            }
+        if (POINT_LIGHT.enableShadows != 0u) {
+            color.xyz *= getShadowAttenuation(position);
         }
-        color.xyz *= attenuation / itCount;
+        if (POINT_LIGHT.enableSSAO != 0u) {
+            color.xyz *= getSSAOAttenuation(position);
+        }
     }
 }
 
@@ -143,10 +149,42 @@ vec3 fresnel(vec3 F0, float V_dot_H) {
     return F0 + (1.0f - F0) * pow(1.0f - V_dot_H, 5.0);
 }
 
-float getAttenuation(vec4 position) {
+float getShadowAttenuation(vec4 position) {
+    float attenuation = 0.0f;
+    float itCount = 0.0f;
+    for (float xo = -0.05; xo <= 0.05; xo += 0.01) {
+        for (float yo = -0.05; yo <= 0.05; yo += 0.01) {
+            for (float zo = -0.05; zo <= 0.05; zo += 0.01) {
+                vec3 depthPos = getShadowMapPos(position + vec4(xo, yo, zo, 0.0));
+                float depth = texture(SHADOW_MAP, depthPos.xy).r;
+                attenuation += depthPos.z <= depth + 1e-4 ? 1.0 : 0.0;
+                itCount++;
+            }
+        }
+    }
+    return attenuation / itCount;
+}
+
+float getSSAOAttenuation(vec4 position) {
+    float attenuation = 0.0f;
+    float itCount = 0.0f;
+    for (float xo = -0.05; xo <= 0.05; xo += 0.01) {
+        for (float yo = -0.05; yo <= 0.05; yo += 0.01) {
+            for (float zo = -0.05; zo <= 0.05; zo += 0.01) {
+                vec3 depthPos = getShadowMapPos(position + vec4(xo, yo, zo, 0.0));
+                float depth = texture(SHADOW_MAP, depthPos.xy).r;
+                attenuation += depthPos.z <= depth + 1e-4 ? 1.0 : 0.0;
+                itCount++;
+            }
+        }
+    }
+    attenuation /= itCount;
+    return clamp(pow(attenuation * 2, 2.0), 0.0, 1.0);
+}
+
+vec3 getShadowMapPos(vec4 position) {
     vec4 depthPos = LIGHT_PROJECTION_MATRIX * LIGHT_VIEW_MATRIX * position;
     depthPos /= depthPos.w;
     depthPos = depthPos * 0.5 + 0.5;
-    float depth = texture(SHADOW_MAP, depthPos.xy).r;
-    return depthPos.z <= depth + 1e-3 ? 1.0 : 0.0;
+    return depthPos.xyz;
 }

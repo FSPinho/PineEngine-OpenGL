@@ -116,7 +116,7 @@ namespace PineEngine {
             const auto &target = this->camera.getTarget();
             const auto &translation = target + glm::normalize(directionalLight.direction) * 50.0f;
             Camera lightCamera(translation, target, -10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-            if (directionalLight.enableShadows) {
+            if (directionalLight.enableShadows || directionalLight.enableSSAO) {
                 for (auto &object: this->rootScene.getObjects()) {
                     object.performShadowMapPass(tick, lightCamera);
                 }
@@ -149,7 +149,7 @@ namespace PineEngine {
             const auto &target = this->camera.getTarget();
             const auto &translation = pointLight.translation;
             Camera lightCamera(translation, target, 1.0f, 90.0f, 0.1f, 100.0f);
-            if (pointLight.enableShadows) {
+            if (pointLight.enableShadows || pointLight.enableSSAO) {
                 for (auto &object: this->rootScene.getObjects()) {
                     object.performShadowMapPass(tick, lightCamera);
                 }
