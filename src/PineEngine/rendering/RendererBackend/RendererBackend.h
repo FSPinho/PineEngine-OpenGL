@@ -53,6 +53,7 @@ namespace PineEngine {
 
         uint32_t createTexture();
         void allocateColorTexture(uint32_t textureId, uint32_t width, uint32_t height, bool multisampled = false);
+        void allocateColorTexture(uint32_t textureId, uint32_t width, uint32_t height, const float *data = nullptr, bool cubeMap = false);
         void allocateDepthTexture(uint32_t textureId, uint32_t width, uint32_t height, bool multisampled = false);
         void bindTextureForCompute(uint32_t textureId, uint32_t attributeIndex);
         void configureTextureFilterNearest(uint32_t textureId);
@@ -62,6 +63,7 @@ namespace PineEngine {
 
         uint32_t createFrameBuffer();
         void attachColorTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId, bool multisampled = false);
+        void attachCubeMapTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId, uint32_t faceIndex);
         void attachDepthTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId, bool multisampled = false);
         void prepareFrameBufferForRendering(uint32_t frameBufferId, uint32_t width, uint32_t height);
         void deleteFrameBuffer(uint32_t frameBufferId);

@@ -1,7 +1,11 @@
 #pragma once
 
-#include <PineEngine/rendering/RendererBackend/RendererBackend.h>
 #include <PineEngine/util/Resource/Resource.h>
+#include <PineEngine/util/ResourceHandler/ResourceHandler.h>
+#include <PineEngine/rendering/RendererBackend/RendererBackend.h>
+#include <PineEngine/rendering/FrameBuffer/FrameBuffer.h>
+#include <PineEngine/rendering/GeometryBuffer/GeometryBuffer.h>
+#include <PineEngine/rendering/Texture/Texture.h>
 
 namespace PineEngine {
     class CubeMap : public Resource {
@@ -15,8 +19,9 @@ namespace PineEngine {
 
     private:
         RendererBackend backend;
-        uint32_t textureId = 0;
 
-        bool isLoaded = false;
+        ResourceHandler<Texture> cubeMapSourceTexture;
+        // ResourceHandler<FrameBuffer> cubeMapFrameBuffer;
+        // ResourceHandler<GeometryBuffer> cubeMapGeometry;
     };
 }

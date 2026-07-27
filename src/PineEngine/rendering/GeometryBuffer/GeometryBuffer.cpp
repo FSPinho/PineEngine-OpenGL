@@ -7,17 +7,18 @@
 #include <string>
 
 namespace PineEngine {
-    GeometryBuffer::GeometryBuffer(const Path &path, const GeometryPreset &preset, RendererBackend &backend)
-        : Resource(path), RendererComponent(backend), loader(preset) {
-        LOG_CONSTRUCTOR("GeometryBuffer");
-    }
+    Path GeometryBuffer::QUAD = Path::inDisk("models/basic/Quad.glb");
+    Path GeometryBuffer::CUBE = Path::inDisk("models/basic/Cube.glb");
+    Path GeometryBuffer::SPHERE = Path::inDisk("models/basic/Sphere.glb");
 
-    GeometryBuffer::GeometryBuffer(const Path &path, RendererBackend &backend) : Resource(path),
-        RendererComponent(backend), loader(path) {
+    GeometryBuffer::GeometryBuffer(const Path &path, const RendererBackend &backend)
+        : Resource(path),
+          RendererComponent(backend), loader(path) {
+        LOG_CONSTRUCTOR(FORMAT("GeometryBuffer[{}]", this->getPath().asString()));
     }
 
     GeometryBuffer::~GeometryBuffer() {
-        LOG_DESTRUCTOR("GeometryBuffer");
+        LOG_DESTRUCTOR(FORMAT("GeometryBuffer[{}]", this->getPath().asString()));
     }
 
     void GeometryBuffer::performRendering() {

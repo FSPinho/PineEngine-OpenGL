@@ -8,6 +8,7 @@
 #include <PineEngine/platform/Platform/Platform.h>
 #include <PineEngine/rendering/RendererBackend/RendererBackend.h>
 #include <PineEngine/rendering/FrameBuffer/FrameBuffer.h>
+#include <PineEngine/rendering/CubeMap/CubeMap.h>
 #include <PineEngine/util/Timer/Timer.h>
 
 namespace PineEngine {
@@ -41,7 +42,10 @@ namespace PineEngine {
         Object addColorQuadObject;
         Object postProcessingQuadObject;
 
+        ResourceHandler<CubeMap> environmentCubeMap;
+
         void _performRender(const Tick &tick);
+        void _performEnvironmentRender(const Tick &tick);
         void _performRenderWithDirectionalLights(const Tick &tick);
         void _performRenderWithPointLights(const Tick &tick);
         void _performRenderAddColor();

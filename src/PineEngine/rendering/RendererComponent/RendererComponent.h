@@ -5,12 +5,12 @@
 namespace PineEngine {
     class RendererComponent {
     public:
-        explicit RendererComponent(RendererBackend &backend);
+        explicit RendererComponent(const RendererBackend &backend);
         virtual ~RendererComponent() = default;
 
         virtual void performRendering() = 0;
 
     protected:
-        RendererBackend &backend;
+        RendererBackend backend;
     };
 } // namespace PineEngine

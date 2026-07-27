@@ -12,7 +12,8 @@ int main() {
         auto &rb = application.getRendererBackend();
 
         auto composed_001 = Object();
-        composed_001.setGeometry<GeometryBuffer>(Path::inDisk("models/composed_002.glb"), rb);
+        // composed_001.setGeometry<GeometryBuffer>(Path::inDisk("models/composed_002.glb"), rb);
+        composed_001.setGeometry<GeometryBuffer>(GeometryBuffer::CUBE, rb);
         composed_001.setShadowMapShader<GraphicShader>(
             Path::inMemory(),
             Path::inDisk("shaders/PBR_01_ShadowMap/vertex.glsl"),
@@ -45,7 +46,7 @@ int main() {
         }
         for (auto &light: pLights) {
             auto lightRef = Object();
-            lightRef.setGeometry<GeometryBuffer>(Path::inMemory(), GeometryPreset::SPHERE, rb);
+            lightRef.setGeometry<GeometryBuffer>(GeometryBuffer::SPHERE, rb);
             lightRef.setColorShader<GraphicShader>(
                 Path::inMemory(),
                 Path::inDisk("shaders/PBR_02_EmitterColor/vertex.glsl"),

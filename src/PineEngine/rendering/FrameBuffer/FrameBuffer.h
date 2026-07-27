@@ -4,9 +4,19 @@
 #include <PineEngine/rendering/RendererBackend/RendererBackend.h>
 
 namespace PineEngine {
+    struct FrameBufferOptions {
+        bool multisampled = false;
+        bool depth = false;
+        bool cubeMap = false;
+    };
+
     class FrameBuffer : public Resource {
     public:
-        explicit FrameBuffer(const Path &path, const RendererBackend &backend, bool multisampled = false, bool depth = true);
+        explicit FrameBuffer(
+            const Path &path,
+            const RendererBackend &backend,
+            const FrameBufferOptions &options
+        );
         ~FrameBuffer() override;
 
         void resize(uint32_t width_, uint32_t height_);
@@ -16,7 +26,7 @@ namespace PineEngine {
         void clear();
         void clearColor();
         void clearDepth();
-        void attachTextures();
+        void attachTextures(uint32_t faceIndex = 0);
         void prepareForRendering();
 
     protected:
@@ -28,8 +38,7 @@ namespace PineEngine {
         uint32_t colorTextureId = 0;
         uint32_t depthTextureId = 0;
 
-        bool multisampled;
-        bool depth;
+        FrameBufferOptions options;
         bool isLoaded = false;
 
         RendererBackend backend;

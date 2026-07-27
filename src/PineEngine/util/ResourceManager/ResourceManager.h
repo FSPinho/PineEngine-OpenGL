@@ -13,7 +13,7 @@ namespace PineEngine {
     class ResourceManager {
     public:
         template<typename R, typename... Args>
-        static ResourceHandler<R> load(const Path &path, Args &&... args) {
+        static ResourceHandler<R> load(const Path &path, const Args &... args) {
             static_assert(std::is_base_of_v<Resource, R>);
 
             std::string key = path.asString();
@@ -35,7 +35,6 @@ namespace PineEngine {
 
         static void notifyResourceAcquired(const std::string &key) {
             if (!resources.contains(key)) {
-                // LOG(FORMAT("Attempted to acquire unknown key \"{}\"", key));
                 return;
             }
 
@@ -44,12 +43,10 @@ namespace PineEngine {
 
         static void notifyResourceReleased(const std::string &key) {
             if (!resources.contains(key)) {
-                // LOG(FORMAT("Attempted to release unknown key \"{}\"", key));
                 return;
             }
 
             if (resourcesUsage[key] == 0) {
-                // LOG(FORMAT("Attempted to release key \"{}\" with no usage", key));
                 return;
             }
 

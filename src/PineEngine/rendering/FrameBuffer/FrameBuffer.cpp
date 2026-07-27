@@ -1,8 +1,12 @@
 #include "FrameBuffer.h"
 
 namespace PineEngine {
-    FrameBuffer::FrameBuffer(const Path &path, const RendererBackend &backend, const bool multisampled, const bool depth)
-        : Resource(path), backend(backend), multisampled(multisampled), depth(depth) {
+    FrameBuffer::FrameBuffer(
+        const Path &path,
+        const RendererBackend &backend,
+        const FrameBufferOptions &options
+    )
+        : Resource(path), backend(backend), options(options) {
         LOG_CONSTRUCTOR(FORMAT("FrameBuffer[{}]", this->getPath().asString()));
     }
 
@@ -14,9 +18,9 @@ namespace PineEngine {
         if (this->width == width_ && this->height == height_) return;
         this->width = width_;
         this->height = height_;
-        this->backend.allocateColorTexture(this->colorTextureId, this->width, this->height, this->multisampled);
-        if (this->depth) {
-            this->backend.allocateDepthTexture(this->depthTextureId, this->width, this->height, this->multisampled);
+        this->backend.allocateColorTexture(this->colorTextureId, this->width, this->height, this->options.multisampled);
+        if (this->options.depth) {
+            this->backend.allocateDepthTexture(this->depthTextureId, this->width, this->height, this->options.multisampled);
         }
     }
 
@@ -40,10 +44,15 @@ namespace PineEngine {
         this->backend.clearDepth(this->frameBufferId);
     }
 
-    void FrameBuffer::attachTextures() {
-        this->backend.attachColorTextureToFrameBuffer(this->frameBufferId, this->colorTextureId, this->multisampled);
-        if (this->depth) {
-            this->backend.attachDepthTextureToFrameBuffer(this->frameBufferId, this->depthTextureId, this->multisampled);
+    void FrameBuffer::attachTextures(const uint32_t faceIndex) {
+        if (this->options.cubeMap) {
+            this->backend.attachCubeMapTextureToFrameBuffer(this->frameBufferId, this->colorTextureId, faceIndex);
+        } else {
+            this->backend.attachColorTextureToFrameBuffer(this->frameBufferId, this->colorTextureId, this->options.multisampled);
+        }
+
+        if (this->options.depth) {
+            this->backend.attachDepthTextureToFrameBuffer(this->frameBufferId, this->depthTextureId, this->options.multisampled);
         }
     }
 
@@ -55,14 +64,14 @@ namespace PineEngine {
         this->frameBufferId = this->backend.createFrameBuffer();
 
         this->colorTextureId = this->backend.createTexture();
-        if (!this->multisampled) {
+        if (!this->options.multisampled) {
             this->backend.configureTextureFilterNearest(this->colorTextureId);
             this->backend.configureTextureClampToEdge(this->colorTextureId);
         }
 
-        if (this->depth) {
+        if (this->options.depth) {
             this->depthTextureId = this->backend.createTexture();
-            if (!this->multisampled) {
+            if (!this->options.multisampled) {
                 this->backend.configureTextureFilterNearest(this->depthTextureId);
                 this->backend.configureTextureClampToEdge(this->depthTextureId);
             }
@@ -74,7 +83,7 @@ namespace PineEngine {
     void FrameBuffer::performUnload() {
         if (this->isLoaded) {
             this->backend.deleteTexture(this->colorTextureId);
-            if (this->depth) {
+            if (this->options.depth) {
                 this->backend.deleteTexture(this->depthTextureId);
             }
             this->backend.deleteFrameBuffer(this->frameBufferId);

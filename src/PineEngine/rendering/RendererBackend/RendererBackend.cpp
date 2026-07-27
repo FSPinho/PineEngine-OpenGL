@@ -307,12 +307,26 @@ namespace PineEngine {
     void RendererBackend::allocateColorTexture(const uint32_t textureId, const uint32_t width, const uint32_t height, const bool multisampled) {
         if (multisampled) {
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureId);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA32F, width, height, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA16F, width, height, GL_TRUE);
         } else {
             glBindTexture(GL_TEXTURE_2D, textureId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         }
         this->_debugMethod("Allocate color texture", true);
+    }
+
+    void RendererBackend::allocateColorTexture(const uint32_t textureId, const uint32_t width, const uint32_t height, const float *data, const bool cubeMap) {
+        if (cubeMap) {
+            glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+            for (int i = 0; i < 6; i++) {
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, data);
+            }
+        } else {
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, data);
+        }
+
+        this->_debugMethod("Allocate color texture with data", true);
     }
 
     void RendererBackend::allocateDepthTexture(const uint32_t textureId, const uint32_t width, const uint32_t height, const bool multisampled) {
@@ -385,6 +399,14 @@ namespace PineEngine {
         }
 
         this->_debugMethod("Attach color texture to frame buffer", true);
+    }
+
+    void RendererBackend::attachCubeMapTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId, const uint32_t faceIndex) {
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, textureId, 0);
+
+        this->_debugMethod("Attach cube-map texture to frame buffer", true);
     }
 
     void RendererBackend::attachDepthTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId, bool multisampled) {

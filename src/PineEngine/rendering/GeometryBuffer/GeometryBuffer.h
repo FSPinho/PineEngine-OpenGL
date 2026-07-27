@@ -9,8 +9,11 @@
 namespace PineEngine {
     class GeometryBuffer : public Resource, public RendererComponent {
     public:
-        explicit GeometryBuffer(const Path &path, const GeometryPreset &preset, RendererBackend &backend);
-        explicit GeometryBuffer(const Path &path, RendererBackend &backend);
+        static Path QUAD;
+        static Path CUBE;
+        static Path SPHERE;
+
+        explicit GeometryBuffer(const Path &path, const RendererBackend &backend);
         ~GeometryBuffer() override;
 
         void performRendering() override;

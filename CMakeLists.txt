@@ -10,6 +10,8 @@ find_package(glad CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
+find_package(Stb REQUIRED)
+find_package(TinyEXR REQUIRED)
 
 add_library(
         PineEngine
@@ -38,6 +40,8 @@ add_library(
         src/PineEngine/rendering/FrameBuffer/FrameBuffer.cpp
         src/PineEngine/rendering/VolumeBuffer/VolumeBuffer.h
         src/PineEngine/rendering/VolumeBuffer/VolumeBuffer.cpp
+        src/PineEngine/rendering/Texture/Texture.h
+        src/PineEngine/rendering/Texture/Texture.cpp
         src/PineEngine/rendering/CubeMap/CubeMap.h
         src/PineEngine/rendering/CubeMap/CubeMap.cpp
 
@@ -85,12 +89,14 @@ target_link_libraries(
         glad::glad
         glfw
         assimp::assimp
+        unofficial::tinyexr::tinyexr
 )
 target_include_directories(
         PineEngine
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
+target_include_directories(PineEngine PRIVATE ${Stb_INCLUDE_DIR})
 target_compile_options(
         PineEngine PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:/FI${CMAKE_SOURCE_DIR}/src/PineEngine/config/Config.h>

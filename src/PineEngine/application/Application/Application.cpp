@@ -10,17 +10,21 @@ namespace PineEngine {
           shadowMapFrameBuffer(ResourceManager::load<FrameBuffer>(
               Path::inMemory(),
               rendererBackend,
-              false, true // No multisample, depth
+              FrameBufferOptions{.depth = true}
           )),
           colorFrameBuffer(ResourceManager::load<FrameBuffer>(
               Path::inMemory(),
               rendererBackend,
-              true, true // Multisample, depth
+              FrameBufferOptions{.multisampled = true, .depth = true}
           )),
           addColorFrameBuffer(ResourceManager::load<FrameBuffer>(
               Path::inMemory(),
               rendererBackend,
-              false, false // No multisample, no depth
+              FrameBufferOptions{}
+          )),
+          environmentCubeMap(ResourceManager::load<CubeMap>(
+              Path::inDisk("hdri/woods-001.exr"),
+              rendererBackend
           )) {
         LOG_CONSTRUCTOR("Application");
 
@@ -28,7 +32,7 @@ namespace PineEngine {
             this->camera.setAspect(static_cast<float>(width) / static_cast<float>(height));
         });
 
-        this->addColorQuadObject.setGeometry<GeometryBuffer>(Path::inMemory(), GeometryPreset::QUAD, this->rendererBackend);
+        this->addColorQuadObject.setGeometry<GeometryBuffer>(GeometryBuffer::QUAD, this->rendererBackend);
         this->addColorQuadObject.setColorShader<GraphicShader>(
             Path::inMemory(),
             Path::inDisk("shaders/PBR_03_AddColor/vertex.glsl"),
@@ -36,7 +40,7 @@ namespace PineEngine {
             this->rendererBackend
         );
 
-        this->postProcessingQuadObject.setGeometry<GeometryBuffer>(Path::inMemory(), GeometryPreset::QUAD, this->rendererBackend);
+        this->postProcessingQuadObject.setGeometry<GeometryBuffer>(GeometryBuffer::QUAD, this->rendererBackend);
         this->postProcessingQuadObject.setColorShader<GraphicShader>(
             Path::inMemory(),
             Path::inDisk("shaders/PBR_04_PostColor/vertex.glsl"),
@@ -90,6 +94,7 @@ namespace PineEngine {
 
         this->addColorFrameBuffer->clear();
 
+        this->_performEnvironmentRender(tick);
         this->_performRenderWithDirectionalLights(tick);
         this->_performRenderWithPointLights(tick);
 
@@ -105,6 +110,9 @@ namespace PineEngine {
         );
 
         this->rendererBackend.swapBuffers();
+    }
+
+    void Application::_performEnvironmentRender(const Tick &tick) {
     }
 
     void Application::_performRenderWithDirectionalLights(const Tick &tick) {

@@ -22,18 +22,18 @@ namespace PineEngine {
         GeometryBuffer &getGeometry();
 
         template<typename T, typename... Args>
-        void setGeometry(Args... args) {
-            this->geometry = ResourceManager::load<T>(args...);
+        void setGeometry(Args&&... args) {
+            this->geometry = ResourceManager::load<T>(std::forward<Args>(args)...);
         }
 
         template<typename T, typename... Args>
-        void setShadowMapShader(Args... args) {
-            this->shadowMapShader = ResourceManager::load<T>(args...);
+        void setShadowMapShader(Args&&... args) {
+            this->shadowMapShader = ResourceManager::load<T>(std::forward<Args>(args)...);
         }
 
         template<typename T, typename... Args>
-        void setColorShader(Args... args) {
-            this->colorShader = ResourceManager::load<T>(args...);
+        void setColorShader(Args&&... args) {
+            this->colorShader = ResourceManager::load<T>(std::forward<Args>(args)...);
         }
 
         void performShadowMapPass(
