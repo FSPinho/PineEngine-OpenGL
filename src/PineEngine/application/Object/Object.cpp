@@ -32,7 +32,8 @@ namespace PineEngine {
         const Tick &tick,
         const Camera &camera,
         const Camera &lightCamera,
-        const DirectionalLight &directionalLight,
+        const DirectionalLight *directionalLight,
+        const PointLight *pointLight,
         const uint32_t &shadowMapTextureId
     ) {
         if (this->colorShader) {
@@ -48,12 +49,19 @@ namespace PineEngine {
 
             this->colorShader->setUniformTexture("SHADOW_MAP", shadowMapTextureId);
 
-            this->colorShader->setUniform("DIRECTIONAL_LIGHTS_COUNT", std::vector{1u});
-            this->colorShader->setUniform("POINT_LIGHTS_COUNT", std::vector{0u});
-            this->colorShader->setUniform("DIRECTIONAL_LIGHTS[0].direction", directionalLight.getDirectionAsArray());
-            this->colorShader->setUniform("DIRECTIONAL_LIGHTS[0].irradiance", directionalLight.getIrradianceAsArray());
-            // this->colorShader->setUniform(FORMAT("POINT_LIGHTS[{}].translation", i), pointLights[i].getTranslationAsArray());
-            // this->colorShader->setUniform(FORMAT("POINT_LIGHTS[{}].radiantIntensity", i), pointLights[i].getRadiantIntensityAsArray());
+            if (directionalLight != nullptr) {
+                this->colorShader->setUniform("ENABLE_SHADOWS", std::vector{static_cast<uint32_t>(directionalLight->enableShadows)});
+                this->colorShader->setUniform("DIRECTIONAL_LIGHTS_COUNT", std::vector{1u});
+                this->colorShader->setUniform("POINT_LIGHTS_COUNT", std::vector{0u});
+                this->colorShader->setUniform("DIRECTIONAL_LIGHTS[0].direction", directionalLight->getDirectionAsArray());
+                this->colorShader->setUniform("DIRECTIONAL_LIGHTS[0].irradiance", directionalLight->getIrradianceAsArray());
+            } else if (pointLight != nullptr) {
+                this->colorShader->setUniform("ENABLE_SHADOWS", std::vector{static_cast<uint32_t>(pointLight->enableShadows)});
+                this->colorShader->setUniform("DIRECTIONAL_LIGHTS_COUNT", std::vector{0u});
+                this->colorShader->setUniform("POINT_LIGHTS_COUNT", std::vector{1u});
+                this->colorShader->setUniform("POINT_LIGHTS[0].translation", pointLight->getTranslationAsArray());
+                this->colorShader->setUniform("POINT_LIGHTS[0].radiantIntensity", pointLight->getRadiantIntensityAsArray());
+            }
 
             this->colorShader->prepareForRendering();
         }
@@ -78,17 +86,14 @@ namespace PineEngine {
         const std::vector<PointLight> &pointLights,
         const bool multisampled
     ) {
-        float strongestLightIntensity = 0.0f;
+        float lightIntensity = 0.0f;
         for (const auto &light: directionalLights) {
-            strongestLightIntensity = std::max(strongestLightIntensity, glm::length(light.irradiance));
+            lightIntensity += glm::length(light.irradiance);
         }
         for (const auto &light: pointLights) {
-            strongestLightIntensity = std::max(
-                strongestLightIntensity,
-                glm::length(light.radiantIntensity) / std::pow(glm::length(light.translation), 2.0f)
-            );
+            lightIntensity = glm::length(light.radiantIntensity) / std::pow(glm::length(light.translation), 2.0f);
         }
-        const float exposure = 1.0f / (strongestLightIntensity / static_cast<float>(std::numbers::pi));
+        const float exposure = 1.0f / (lightIntensity / static_cast<float>(std::numbers::pi));
 
         if (this->colorShader) {
             this->colorShader->setUniformTexture("COLOR", colorTextureId, multisampled);

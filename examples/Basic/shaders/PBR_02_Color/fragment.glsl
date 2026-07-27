@@ -25,6 +25,7 @@ uniform mat4 LIGHT_VIEW_MATRIX;
 uniform mat4 LIGHT_PROJECTION_MATRIX;
 
 uniform sampler2D SHADOW_MAP;
+uniform uint ENABLE_SHADOWS;
 
 // Constants
 const float PI = 3.14159265359;
@@ -38,6 +39,7 @@ vec3 Li_DirectionalLight(vec3 E);
 float GGX_Trowbridge_Reitz(float roughness, float N_dot_H);
 float Schlick_GGZ(float roughness, float N_dot_V, float N_dot_L);
 vec3 fresnel(vec3 F0, float V_dot_H);
+float getAttenuation(vec4 position);
 
 void main() {
     // Material
@@ -71,11 +73,17 @@ void main() {
     }
 
     // Shadow
-    vec4 depthPos = LIGHT_PROJECTION_MATRIX * LIGHT_VIEW_MATRIX * position;
-    depthPos /= depthPos.w;
-    depthPos = depthPos * 0.5 + 0.5;
-    float depth = texture(SHADOW_MAP, depthPos.xy).r;
-    color.xyz *= depthPos.z <= depth + 1e-3 ? 1.0 : 0.0;
+    if (ENABLE_SHADOWS != 0u) {
+        float attenuation = 0.0f;
+        float itCount = 0.0f;
+        for (float xo = -0.02; xo <= 0.02; xo += 0.01) {
+            for (float yo = -0.02; yo <= 0.02; yo += 0.01) {
+                attenuation += getAttenuation(position + vec4(xo, yo, 0.0, 0.0));
+                itCount++;
+            }
+        }
+        color.xyz *= attenuation / itCount;
+    }
 }
 
 vec3 Lo(
@@ -135,3 +143,10 @@ vec3 fresnel(vec3 F0, float V_dot_H) {
     return F0 + (1.0f - F0) * pow(1.0f - V_dot_H, 5.0);
 }
 
+float getAttenuation(vec4 position) {
+    vec4 depthPos = LIGHT_PROJECTION_MATRIX * LIGHT_VIEW_MATRIX * position;
+    depthPos /= depthPos.w;
+    depthPos = depthPos * 0.5 + 0.5;
+    float depth = texture(SHADOW_MAP, depthPos.xy).r;
+    return depthPos.z <= depth + 1e-3 ? 1.0 : 0.0;
+}

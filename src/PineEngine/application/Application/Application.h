@@ -40,5 +40,10 @@ namespace PineEngine {
 
         Object addColorQuadObject;
         Object postProcessingQuadObject;
+
+        void _performRender(const Tick &tick);
+        void _performRenderWithDirectionalLights(const Tick &tick);
+        void _performRenderWithPointLights(const Tick &tick);
+        void _performRenderAddColor();
     };
 } // namespace PineEngine

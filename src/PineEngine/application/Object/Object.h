@@ -45,7 +45,8 @@ namespace PineEngine {
             const Tick &tick,
             const Camera &camera,
             const Camera &lightCamera,
-            const DirectionalLight &directionalLight,
+            const DirectionalLight *directionalLight,
+            const PointLight *pointLight,
             const uint32_t &shadowMapTextureId
         );
 

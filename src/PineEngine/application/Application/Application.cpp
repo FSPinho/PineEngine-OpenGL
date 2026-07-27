@@ -54,63 +54,7 @@ namespace PineEngine {
             const auto tick = this->timer.getNextTick();
             this->inputManager.preProcessMouseEvents(tick);
 
-            const auto [width, height] = this->platform.getSurfaceSize();
-            this->shadowMapFrameBuffer->resize(width, height);
-            this->colorFrameBuffer->resize(width, height);
-            this->addColorFrameBuffer->resize(width, height);
-
-            this->shadowMapFrameBuffer->attachTextures();
-            this->colorFrameBuffer->attachTextures();
-            this->addColorFrameBuffer->attachTextures();
-
-            bool isFirstPass = true;
-
-            for (const auto &directionalLight: this->rootScene.getDirectionalLights()) {
-                // Shadow map
-                this->shadowMapFrameBuffer->prepareForRendering();
-                this->shadowMapFrameBuffer->clear();
-                const auto &target = this->camera.getTarget();
-                const auto &translation = target + glm::normalize(directionalLight.direction) * 50.0f;
-                Camera lightCamera(translation, target, -5.0f, 5.0f, -5.0f, 5.0f, 0.1f, 100.0f);
-                for (auto &object: this->rootScene.getObjects()) {
-                    object.performShadowMapPass(tick, lightCamera);
-                }
-
-                // Color
-                this->rendererBackend.disableBlend();
-                this->colorFrameBuffer->prepareForRendering();
-                this->colorFrameBuffer->clear();
-                for (auto &object: this->rootScene.getObjects()) {
-                    object.performColorPass(
-                        tick,
-                        this->camera,
-                        lightCamera,
-                        directionalLight,
-                        this->shadowMapFrameBuffer->getDepthTextureId()
-                    );
-                }
-
-                // Add color
-                this->rendererBackend.enableBlend();
-                this->addColorFrameBuffer->prepareForRendering();
-                if (isFirstPass) this->addColorFrameBuffer->clear();
-                this->addColorQuadObject.performAddColorPass(this->colorFrameBuffer->getColorTextureId(), true);
-
-                isFirstPass = false;
-            }
-
-            // Post color pass
-            this->rendererBackend.disableBlend();
-            this->rendererBackend.prepareFrameBufferForRendering(0, width, height);
-            this->rendererBackend.clearFrame();
-            this->postProcessingQuadObject.performPostColorPass(
-                this->addColorFrameBuffer->getColorTextureId(),
-                this->rootScene.getDirectionalLights(),
-                this->rootScene.getPointLights(),
-                false
-            );
-
-            this->rendererBackend.swapBuffers();
+            this->_performRender(tick);
 
             onTick(tick);
 
@@ -132,5 +76,107 @@ namespace PineEngine {
 
     InputManager &Application::getInputManager() {
         return this->inputManager;
+    }
+
+    void Application::_performRender(const Tick &tick) {
+        const auto [width, height] = this->platform.getSurfaceSize();
+        this->shadowMapFrameBuffer->resize(4096, 4096);
+        this->colorFrameBuffer->resize(width, height);
+        this->addColorFrameBuffer->resize(width, height);
+
+        this->shadowMapFrameBuffer->attachTextures();
+        this->colorFrameBuffer->attachTextures();
+        this->addColorFrameBuffer->attachTextures();
+
+        this->addColorFrameBuffer->clear();
+
+        this->_performRenderWithDirectionalLights(tick);
+        this->_performRenderWithPointLights(tick);
+
+        // Post color pass
+        this->rendererBackend.disableBlend();
+        this->rendererBackend.prepareFrameBufferForRendering(0, width, height);
+        this->rendererBackend.clearFrame();
+        this->postProcessingQuadObject.performPostColorPass(
+            this->addColorFrameBuffer->getColorTextureId(),
+            this->rootScene.getDirectionalLights(),
+            this->rootScene.getPointLights(),
+            false
+        );
+
+        this->rendererBackend.swapBuffers();
+    }
+
+    void Application::_performRenderWithDirectionalLights(const Tick &tick) {
+        for (const auto &directionalLight: this->rootScene.getDirectionalLights()) {
+            // Shadow map
+
+            this->shadowMapFrameBuffer->prepareForRendering();
+            this->shadowMapFrameBuffer->clear();
+            const auto &target = this->camera.getTarget();
+            const auto &translation = target + glm::normalize(directionalLight.direction) * 50.0f;
+            Camera lightCamera(translation, target, -10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+            if (directionalLight.enableShadows) {
+                for (auto &object: this->rootScene.getObjects()) {
+                    object.performShadowMapPass(tick, lightCamera);
+                }
+            }
+
+            // Color
+            this->rendererBackend.disableBlend();
+            this->colorFrameBuffer->prepareForRendering();
+            this->colorFrameBuffer->clear();
+            for (auto &object: this->rootScene.getObjects()) {
+                object.performColorPass(
+                    tick,
+                    this->camera,
+                    lightCamera,
+                    &directionalLight,
+                    nullptr,
+                    this->shadowMapFrameBuffer->getDepthTextureId()
+                );
+            }
+
+            this->_performRenderAddColor();
+        }
+    }
+
+    void Application::_performRenderWithPointLights(const Tick &tick) {
+        for (const auto &pointLight: this->rootScene.getPointLights()) {
+            // Shadow map
+            this->shadowMapFrameBuffer->prepareForRendering();
+            this->shadowMapFrameBuffer->clear();
+            const auto &target = this->camera.getTarget();
+            const auto &translation = pointLight.translation;
+            Camera lightCamera(translation, target, 1.0f, 90.0f, 0.1f, 100.0f);
+            if (pointLight.enableShadows) {
+                for (auto &object: this->rootScene.getObjects()) {
+                    object.performShadowMapPass(tick, lightCamera);
+                }
+            }
+
+            // Color
+            this->rendererBackend.disableBlend();
+            this->colorFrameBuffer->prepareForRendering();
+            this->colorFrameBuffer->clear();
+            for (auto &object: this->rootScene.getObjects()) {
+                object.performColorPass(
+                    tick,
+                    this->camera,
+                    lightCamera,
+                    nullptr,
+                    &pointLight,
+                    this->shadowMapFrameBuffer->getDepthTextureId()
+                );
+            }
+
+            this->_performRenderAddColor();
+        }
+    }
+
+    void Application::_performRenderAddColor() {
+        this->rendererBackend.enableBlend();
+        this->addColorFrameBuffer->prepareForRendering();
+        this->addColorQuadObject.performAddColorPass(this->colorFrameBuffer->getColorTextureId(), true);
     }
 } // namespace PineEngine
