@@ -1,11 +1,12 @@
 #pragma once
+
+#include <functional>
+#include <utility>
 #include <PineEngine/util/Log/Log.h>
 #include <PineEngine/util/Resource/Resource.h>
 
 
 namespace PineEngine {
-    class ResourceManager;
-
     template<typename R>
         requires std::derived_from<R, Resource>
     class ResourceHandler {
@@ -13,29 +14,37 @@ namespace PineEngine {
         explicit ResourceHandler() : ResourceHandler(nullptr) {
         }
 
-        explicit ResourceHandler(R *resource)
+        explicit ResourceHandler(
+            R *resource,
+            std::function<void(std::string key)> onAcquire = nullptr,
+            std::function<void(std::string key)> onRelease = nullptr
+        )
             : resource(resource),
               resourceKey(
                   resource != nullptr
                       ? resource->getPath().asString()
                       : "-undefined-"
-              ) {
-            if (this->resource != nullptr) {
-                ResourceManager::notifyResourceAcquired(this->resourceKey);
+              ),
+              onAcquire(std::move(onAcquire)),
+              onRelease(std::move(onRelease)) {
+            if (this->resource != nullptr && this->onAcquire != nullptr) {
+                this->onAcquire(this->resourceKey);
             }
         }
 
-        ResourceHandler(const ResourceHandler &other) : ResourceHandler(other.resource) {
+        ResourceHandler(const ResourceHandler &other)
+            : ResourceHandler(other.resource, other.onAcquire, other.onRelease) {
         }
 
         ResourceHandler &operator=(const ResourceHandler &) = delete;
 
         ResourceHandler(ResourceHandler &&) noexcept = default;
+
         ResourceHandler &operator=(ResourceHandler &&) noexcept = default;
 
         ~ResourceHandler() {
-            if (this->resource != nullptr) {
-                ResourceManager::notifyResourceReleased(this->resourceKey);
+            if (this->resource != nullptr && this->onRelease != nullptr) {
+                this->onRelease(this->resourceKey);
             }
         }
 
@@ -47,5 +56,8 @@ namespace PineEngine {
     private:
         R *resource;
         std::string resourceKey;
+
+        std::function<void(std::string key)> onAcquire;
+        std::function<void(std::string key)> onRelease;
     };
 } // namespace PineEngine

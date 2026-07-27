@@ -27,7 +27,15 @@ namespace PineEngine {
             }
 
             // Create the handler
-            ResourceHandler handler(dynamic_cast<R *>(resources.at(key).get()));
+            ResourceHandler handler(
+                dynamic_cast<R *>(resources.at(key).get()),
+                [](const std::string &key) {
+                    notifyResourceAcquired(key);
+                },
+                [](const std::string &key) {
+                    notifyResourceReleased(key);
+                }
+            );
             return std::move(handler);
         }
 
