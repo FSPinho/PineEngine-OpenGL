@@ -14,7 +14,8 @@ namespace PineEngine {
         void clearFrame(uint32_t frameBufferId = 0);
         void clearColor(uint32_t frameBufferId = 0);
         void clearDepth(uint32_t frameBufferId = 0);
-        void enableBlend();
+        void enableBlendOverrideBySRCAlpha();
+        void enableBlendOneOne();
         void disableBlend();
         void swapBuffers();
 
@@ -46,7 +47,8 @@ namespace PineEngine {
         void setUniform(uint32_t shaderId, const std::string &name, const std::vector<uint32_t> &value);
         void setUniform(uint32_t shaderId, const std::string &name, const std::vector<float> &value);
         void setUniform(uint32_t shaderId, const std::string &name, const glm::mat4 &value);
-        void setUniformTexture(uint32_t shaderId, const std::string &name, uint32_t textureId, bool multisampled = false);
+        void setUniformTexture(uint32_t shaderId, const std::string &name, uint32_t textureId, bool multisampled = false, uint32_t attributeIndex = 0);
+        void setUniformCubeMapTexture(uint32_t shaderId, const std::string &name, uint32_t textureId);
 
         void executeComputeShader(uint32_t shaderId, const uint32_t &x, const uint32_t &y);
         void waitComputeShader();
@@ -56,16 +58,16 @@ namespace PineEngine {
         void allocateColorTexture(uint32_t textureId, uint32_t width, uint32_t height, const float *data = nullptr, bool cubeMap = false);
         void allocateDepthTexture(uint32_t textureId, uint32_t width, uint32_t height, bool multisampled = false);
         void bindTextureForCompute(uint32_t textureId, uint32_t attributeIndex);
-        void configureTextureFilterNearest(uint32_t textureId);
-        void configureTextureFilterLinear(uint32_t textureId);
-        void configureTextureClampToEdge(uint32_t textureId);
+        void configureTextureFilterNearest(uint32_t textureId, bool cubeMap = false);
+        void configureTextureFilterLinear(uint32_t textureId, bool cubeMap = false);
+        void configureTextureClampToEdge(uint32_t textureId, bool cubeMap = false);
         void deleteTexture(uint32_t textureId);
 
         uint32_t createFrameBuffer();
-        void attachColorTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId, bool multisampled = false);
-        void attachCubeMapTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId, uint32_t faceIndex);
+        void attachColorTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId, uint32_t attachmentIndex, bool multisampled = false);
+        void attachCubeMapTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId, uint32_t attachmentIndex, uint32_t faceIndex);
         void attachDepthTextureToFrameBuffer(uint32_t frameBufferId, uint32_t textureId, bool multisampled = false);
-        void prepareFrameBufferForRendering(uint32_t frameBufferId, uint32_t width, uint32_t height);
+        void prepareFrameBufferForRendering(uint32_t frameBufferId, uint32_t layers, uint32_t width, uint32_t height);
         void deleteFrameBuffer(uint32_t frameBufferId);
 
         void drawTriangles(uint32_t vertexCount);

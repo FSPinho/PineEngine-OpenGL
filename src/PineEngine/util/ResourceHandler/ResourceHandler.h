@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <utility>
+#include <stdexcept>
 #include <PineEngine/util/Log/Log.h>
 #include <PineEngine/util/Resource/Resource.h>
 
@@ -27,6 +28,7 @@ namespace PineEngine {
               ),
               onAcquire(std::move(onAcquire)),
               onRelease(std::move(onRelease)) {
+
             if (this->resource != nullptr && this->onAcquire != nullptr) {
                 this->onAcquire(this->resourceKey);
             }

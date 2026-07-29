@@ -80,8 +80,17 @@ namespace PineEngine {
         return this->aspect;
     }
 
+    glm::vec3 Camera::getTranslation() const {
+        return this->translation;
+    }
+
     std::vector<float> Camera::getTranslationAsArray() const {
         return {this->translation.x, this->translation.y, this->translation.z};
+    }
+
+    std::vector<float> Camera::getDirectionAsArray() const {
+        const auto dir = glm::normalize(this->target - this->translation);
+        return {dir[0], dir[1], dir[2]};
     }
 
     const glm::vec3 &Camera::getTarget() const {

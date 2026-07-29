@@ -7,6 +7,11 @@ namespace PineEngine {
     Application::Application()
         : rendererBackend(this->platform),
           inputManager(this->platform),
+          environmentFrameBuffer(ResourceManager::load<FrameBuffer>(
+              Path::inMemory(),
+              rendererBackend,
+              FrameBufferOptions{}
+          )),
           shadowMapFrameBuffer(ResourceManager::load<FrameBuffer>(
               Path::inMemory(),
               rendererBackend,
@@ -23,6 +28,7 @@ namespace PineEngine {
               FrameBufferOptions{}
           )),
           environmentCubeMap(ResourceManager::load<CubeMap>(
+              Path::inMemory(),
               Path::inDisk("hdri/woods-001.exr"),
               rendererBackend
           )) {
@@ -31,6 +37,14 @@ namespace PineEngine {
         this->platform.addResizeListener([this](const uint32_t width, const uint32_t height) {
             this->camera.setAspect(static_cast<float>(width) / static_cast<float>(height));
         });
+
+        this->environmentObject.setGeometry<GeometryBuffer>(GeometryBuffer::CUBE, this->rendererBackend);
+        this->environmentObject.setColorShader<GraphicShader>(
+            Path::inMemory(),
+            Path::inDisk("shaders/PBR_00_CubeMapUse/vertex.glsl"),
+            Path::inDisk("shaders/PBR_00_CubeMapUse/fragment.glsl"),
+            this->rendererBackend
+        );
 
         this->addColorQuadObject.setGeometry<GeometryBuffer>(GeometryBuffer::QUAD, this->rendererBackend);
         this->addColorQuadObject.setColorShader<GraphicShader>(
@@ -84,10 +98,12 @@ namespace PineEngine {
 
     void Application::_performRender(const Tick &tick) {
         const auto [width, height] = this->platform.getSurfaceSize();
+        this->environmentFrameBuffer->resize(width, height);
         this->shadowMapFrameBuffer->resize(4096, 4096);
         this->colorFrameBuffer->resize(width, height);
         this->addColorFrameBuffer->resize(width, height);
 
+        this->environmentFrameBuffer->attachTextures();
         this->shadowMapFrameBuffer->attachTextures();
         this->colorFrameBuffer->attachTextures();
         this->addColorFrameBuffer->attachTextures();
@@ -100,19 +116,23 @@ namespace PineEngine {
 
         // Post color pass
         this->rendererBackend.disableBlend();
-        this->rendererBackend.prepareFrameBufferForRendering(0, width, height);
+        this->rendererBackend.prepareFrameBufferForRendering(0, 1, width, height);
         this->rendererBackend.clearFrame();
         this->postProcessingQuadObject.performPostColorPass(
+            this->environmentFrameBuffer->getColorTextureId(),
             this->addColorFrameBuffer->getColorTextureId(),
             this->rootScene.getDirectionalLights(),
-            this->rootScene.getPointLights(),
-            false
+            this->rootScene.getPointLights()
         );
 
         this->rendererBackend.swapBuffers();
     }
 
     void Application::_performEnvironmentRender(const Tick &tick) {
+        this->rendererBackend.disableBlend();
+        this->environmentFrameBuffer->prepareForRendering();
+        this->environmentFrameBuffer->clear();
+        this->environmentObject.performCubeMapPass(tick, this->camera, this->environmentCubeMap->getTextureId());
     }
 
     void Application::_performRenderWithDirectionalLights(const Tick &tick) {
@@ -141,6 +161,7 @@ namespace PineEngine {
                     lightCamera,
                     &directionalLight,
                     nullptr,
+                    this->environmentCubeMap->getTextureId(),
                     this->shadowMapFrameBuffer->getDepthTextureId()
                 );
             }
@@ -156,7 +177,7 @@ namespace PineEngine {
             this->shadowMapFrameBuffer->clear();
             const auto &target = this->camera.getTarget();
             const auto &translation = pointLight.translation;
-            Camera lightCamera(translation, target, 1.0f, 90.0f, 0.1f, 100.0f);
+            Camera lightCamera(translation, target, 1.0f, glm::radians(90.0f), 0.1f, 100.0f);
             if (pointLight.enableShadows || pointLight.enableSSAO) {
                 for (auto &object: this->rootScene.getObjects()) {
                     object.performShadowMapPass(tick, lightCamera);
@@ -174,6 +195,7 @@ namespace PineEngine {
                     lightCamera,
                     nullptr,
                     &pointLight,
+                    this->environmentCubeMap->getTextureId(),
                     this->shadowMapFrameBuffer->getDepthTextureId()
                 );
             }
@@ -183,7 +205,7 @@ namespace PineEngine {
     }
 
     void Application::_performRenderAddColor() {
-        this->rendererBackend.enableBlend();
+        this->rendererBackend.enableBlendOneOne();
         this->addColorFrameBuffer->prepareForRendering();
         this->addColorQuadObject.performAddColorPass(this->colorFrameBuffer->getColorTextureId(), true);
     }

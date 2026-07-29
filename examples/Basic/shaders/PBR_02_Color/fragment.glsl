@@ -28,6 +28,7 @@ uniform vec3 VIEW_POSITION;
 uniform mat4 LIGHT_VIEW_MATRIX;
 uniform mat4 LIGHT_PROJECTION_MATRIX;
 
+uniform samplerCube ENVIRONMENT_CUBE_MAP;
 uniform sampler2D SHADOW_MAP;
 
 // Constants
@@ -49,9 +50,9 @@ vec3 getShadowMapPos(vec4 position);
 void main() {
     // Material
     vec3 albedo = vec3(1.0f, 1.0f, 1.0f);
-    float roughness = 0.2;
-    vec3 reflectance = vec3(0.04);
-//    vec3 reflectance = vec3(1.000, 0.766, 0.336); // Gold
+    float roughness = 0.8;
+     vec3 reflectance = vec3(0.04);
+//     vec3 reflectance = vec3(1.000, 0.766, 0.336); // Gold
     float metallic = 0.0;
 
     // ...
@@ -91,6 +92,18 @@ void main() {
             color.xyz *= getSSAOAttenuation(position);
         }
     }
+
+    // Ambient light
+    vec3 I = texture(ENVIRONMENT_CUBE_MAP, N).xyz * 500.0f;
+    vec3 L = N;
+    vec3 Li = I;
+    color.xyz += I; // Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
+
+    // Reflection
+//    vec3 R = reflect(-V, N);
+//    vec3 L = R;
+//    vec3 Li = texture(ENVIRONMENT_CUBE_MAP, R).xyz;
+//    color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
 }
 
 vec3 Lo(

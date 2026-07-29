@@ -18,14 +18,22 @@ namespace PineEngine {
         if (this->width == width_ && this->height == height_) return;
         this->width = width_;
         this->height = height_;
-        this->backend.allocateColorTexture(this->colorTextureId, this->width, this->height, this->options.multisampled);
+
+        for (const auto &textureId: this->colorTextureIds) {
+            if (this->options.cubeMap) {
+                this->backend.allocateColorTexture(textureId, this->width, this->height, nullptr, true);
+            } else {
+                this->backend.allocateColorTexture(textureId, this->width, this->height, this->options.multisampled);
+            }
+        }
+
         if (this->options.depth) {
             this->backend.allocateDepthTexture(this->depthTextureId, this->width, this->height, this->options.multisampled);
         }
     }
 
-    uint32_t FrameBuffer::getColorTextureId() {
-        return this->colorTextureId;
+    uint32_t FrameBuffer::getColorTextureId(const uint32_t layer) {
+        return this->colorTextureIds[layer];
     }
 
     uint32_t FrameBuffer::getDepthTextureId() {
@@ -44,11 +52,11 @@ namespace PineEngine {
         this->backend.clearDepth(this->frameBufferId);
     }
 
-    void FrameBuffer::attachTextures(const uint32_t faceIndex) {
+    void FrameBuffer::attachTextures(const uint32_t layer, const uint32_t faceIndex) {
         if (this->options.cubeMap) {
-            this->backend.attachCubeMapTextureToFrameBuffer(this->frameBufferId, this->colorTextureId, faceIndex);
+            this->backend.attachCubeMapTextureToFrameBuffer(this->frameBufferId, this->colorTextureIds[layer], layer, faceIndex);
         } else {
-            this->backend.attachColorTextureToFrameBuffer(this->frameBufferId, this->colorTextureId, this->options.multisampled);
+            this->backend.attachColorTextureToFrameBuffer(this->frameBufferId, this->colorTextureIds[layer], layer, this->options.multisampled);
         }
 
         if (this->options.depth) {
@@ -57,16 +65,30 @@ namespace PineEngine {
     }
 
     void FrameBuffer::prepareForRendering() {
-        this->backend.prepareFrameBufferForRendering(this->frameBufferId, this->width, this->height);
+        this->backend.prepareFrameBufferForRendering(this->frameBufferId, this->options.colorLayers, this->width, this->height);
     }
 
     void FrameBuffer::performLoad() {
         this->frameBufferId = this->backend.createFrameBuffer();
 
-        this->colorTextureId = this->backend.createTexture();
+        if (this->options.colorLayers == 0) {
+            throw std::runtime_error("Frame buffer must have at least one color layer.");
+        }
+
+        for (uint32_t i = 0; i < this->options.colorLayers; i++) {
+            this->colorTextureIds.push_back(this->backend.createTexture());
+        }
+
         if (!this->options.multisampled) {
-            this->backend.configureTextureFilterNearest(this->colorTextureId);
-            this->backend.configureTextureClampToEdge(this->colorTextureId);
+            for (const auto &textureId: this->colorTextureIds) {
+                if (this->options.cubeMap) {
+                    this->backend.configureTextureFilterNearest(textureId, true);
+                    this->backend.configureTextureClampToEdge(textureId, true);
+                } else {
+                    this->backend.configureTextureFilterNearest(textureId);
+                    this->backend.configureTextureClampToEdge(textureId);
+                }
+            }
         }
 
         if (this->options.depth) {
@@ -82,7 +104,9 @@ namespace PineEngine {
 
     void FrameBuffer::performUnload() {
         if (this->isLoaded) {
-            this->backend.deleteTexture(this->colorTextureId);
+            for (const auto &textureId: this->colorTextureIds) {
+                this->backend.deleteTexture(textureId);
+            }
             if (this->options.depth) {
                 this->backend.deleteTexture(this->depthTextureId);
             }

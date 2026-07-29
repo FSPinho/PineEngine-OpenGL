@@ -10,8 +10,10 @@
 namespace PineEngine {
     class CubeMap : public Resource {
     public:
-        explicit CubeMap(const Path &path, const RendererBackend &backend);
+        explicit CubeMap(const Path &path, const Path &sourcePath, const RendererBackend &backend);
         ~CubeMap() override;
+
+        uint32_t getTextureId();
 
     protected:
         void performLoad() override;
@@ -21,7 +23,7 @@ namespace PineEngine {
         RendererBackend backend;
 
         ResourceHandler<Texture> cubeMapSourceTexture;
-        // ResourceHandler<FrameBuffer> cubeMapFrameBuffer;
-        // ResourceHandler<GeometryBuffer> cubeMapGeometry;
+        ResourceHandler<FrameBuffer> cubeMapFrameBuffer;
+        ResourceHandler<GeometryBuffer> cubeMapGeometry;
     };
 }

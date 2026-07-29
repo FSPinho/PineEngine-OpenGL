@@ -5,6 +5,10 @@
 #include <stdexcept>
 #include <string>
 
+
+#define COLOR_TEXTURE_FORMAT GL_RGBA32F
+
+
 namespace PineEngine {
     RendererBackend::RendererBackend(Platform &platform) : platform(platform) {
         this->_initializeOpenGLContext();
@@ -34,7 +38,12 @@ namespace PineEngine {
         glClear(GL_DEPTH_BUFFER_BIT);
     }
 
-    void RendererBackend::enableBlend() {
+    void RendererBackend::enableBlendOverrideBySRCAlpha() {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    void RendererBackend::enableBlendOneOne() {
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE);
     }
@@ -263,21 +272,34 @@ namespace PineEngine {
         const uint32_t shaderId,
         const std::string &name,
         const uint32_t textureId,
-        bool multisampled
+        const bool multisampled,
+        const uint32_t attributeIndex
     ) {
         const int32_t uniformLocation = this->_getUniformLocation(shaderId, name);
         if (uniformLocation == -1) return;
 
         glUseProgram(shaderId);
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE0 + attributeIndex);
         if (multisampled) {
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureId);
         } else {
             glBindTexture(GL_TEXTURE_2D, textureId);
         }
-        glUniform1i(uniformLocation, 0);
+        glUniform1i(uniformLocation, attributeIndex);
 
         this->_debugMethod("Set uniform texture", true);
+    }
+
+    void RendererBackend::setUniformCubeMapTexture(const uint32_t shaderId, const std::string &name, const uint32_t textureId) {
+        const int32_t uniformLocation = this->_getUniformLocation(shaderId, name);
+        if (uniformLocation == -1) return;
+
+        glUseProgram(shaderId);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+        glUniform1i(uniformLocation, 0);
+
+        this->_debugMethod("Set uniform cube-map texture", true);
     }
 
     void RendererBackend::executeComputeShader(const uint32_t shaderId, const uint32_t &x, const uint32_t &y) {
@@ -307,10 +329,10 @@ namespace PineEngine {
     void RendererBackend::allocateColorTexture(const uint32_t textureId, const uint32_t width, const uint32_t height, const bool multisampled) {
         if (multisampled) {
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureId);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA16F, width, height, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, COLOR_TEXTURE_FORMAT, width, height, GL_TRUE);
         } else {
             glBindTexture(GL_TEXTURE_2D, textureId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, COLOR_TEXTURE_FORMAT, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         }
         this->_debugMethod("Allocate color texture", true);
     }
@@ -319,11 +341,11 @@ namespace PineEngine {
         if (cubeMap) {
             glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
             for (int i = 0; i < 6; i++) {
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, data);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, COLOR_TEXTURE_FORMAT, width, height, 0, GL_RGBA, GL_FLOAT, data);
             }
         } else {
             glBindTexture(GL_TEXTURE_2D, textureId);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, COLOR_TEXTURE_FORMAT, width, height, 0, GL_RGBA, GL_FLOAT, data);
         }
 
         this->_debugMethod("Allocate color texture with data", true);
@@ -350,31 +372,49 @@ namespace PineEngine {
             GL_FALSE,
             0,
             GL_READ_WRITE,
-            GL_RGBA32F
+            COLOR_TEXTURE_FORMAT
         );
         this->_debugMethod("Bind texture for compute", true);
     }
 
-    void RendererBackend::configureTextureFilterNearest(const uint32_t textureId) {
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    void RendererBackend::configureTextureFilterNearest(const uint32_t textureId, const bool cubeMap) {
+        if (cubeMap) {
+            glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        } else {
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        }
 
         this->_debugMethod("Configure texture filters", true);
     }
 
-    void RendererBackend::configureTextureFilterLinear(const uint32_t textureId) {
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    void RendererBackend::configureTextureFilterLinear(const uint32_t textureId, const bool cubeMap) {
+        if (cubeMap) {
+            glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        } else {
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
 
         this->_debugMethod("Configure texture filters", true);
     }
 
-    void RendererBackend::configureTextureClampToEdge(const uint32_t textureId) {
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    void RendererBackend::configureTextureClampToEdge(const uint32_t textureId, const bool cubeMap) {
+        if (cubeMap) {
+            glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        } else {
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        }
 
         this->_debugMethod("Configure texture wrapping", true);
     }
@@ -389,24 +429,24 @@ namespace PineEngine {
         return id;
     }
 
-    void RendererBackend::attachColorTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId, bool multisampled) {
+    void RendererBackend::attachColorTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId, const uint32_t attachmentIndex, const bool multisampled) {
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 
         if (multisampled) {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureId, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachmentIndex, GL_TEXTURE_2D_MULTISAMPLE, textureId, 0);
         } else {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachmentIndex, GL_TEXTURE_2D, textureId, 0);
         }
 
-        this->_debugMethod("Attach color texture to frame buffer", true);
+        this->_debugMethod(FORMAT("Attach color texture={} to frame buffer at layer={}", textureId, attachmentIndex), true);
     }
 
-    void RendererBackend::attachCubeMapTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId, const uint32_t faceIndex) {
+    void RendererBackend::attachCubeMapTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId, const uint32_t attachmentIndex, const uint32_t faceIndex) {
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, textureId, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachmentIndex, GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, textureId, 0);
 
-        this->_debugMethod("Attach cube-map texture to frame buffer", true);
+        this->_debugMethod(FORMAT("Attach cube-map texture {} to frame buffer", faceIndex), true);
     }
 
     void RendererBackend::attachDepthTextureToFrameBuffer(const uint32_t frameBufferId, const uint32_t textureId, bool multisampled) {
@@ -423,10 +463,20 @@ namespace PineEngine {
 
     void RendererBackend::prepareFrameBufferForRendering(
         const uint32_t frameBufferId,
+        const uint32_t layers,
         const uint32_t width,
         const uint32_t height
     ) {
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+
+        if (layers > 1) {
+            std::vector<GLenum> layers_;
+            for (uint32_t i = 0; i < layers; i++) {
+                layers_.push_back(GL_COLOR_ATTACHMENT0 + i);
+            }
+            glDrawBuffers(layers, layers_.data());
+        }
+
         glViewport(0, 0, width, height);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {

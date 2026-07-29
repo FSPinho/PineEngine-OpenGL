@@ -22,19 +22,25 @@ namespace PineEngine {
         GeometryBuffer &getGeometry();
 
         template<typename T, typename... Args>
-        void setGeometry(Args&&... args) {
+        void setGeometry(Args &&... args) {
             this->geometry = ResourceManager::load<T>(std::forward<Args>(args)...);
         }
 
         template<typename T, typename... Args>
-        void setShadowMapShader(Args&&... args) {
+        void setShadowMapShader(Args &&... args) {
             this->shadowMapShader = ResourceManager::load<T>(std::forward<Args>(args)...);
         }
 
         template<typename T, typename... Args>
-        void setColorShader(Args&&... args) {
+        void setColorShader(Args &&... args) {
             this->colorShader = ResourceManager::load<T>(std::forward<Args>(args)...);
         }
+
+        void performCubeMapPass(
+            const Tick &tick,
+            const Camera &camera,
+            const uint32_t &cubeMapTextureId
+        );
 
         void performShadowMapPass(
             const Tick &tick,
@@ -47,16 +53,17 @@ namespace PineEngine {
             const Camera &lightCamera,
             const DirectionalLight *directionalLight,
             const PointLight *pointLight,
+            const uint32_t &environmentCubeMapTextureId,
             const uint32_t &shadowMapTextureId
         );
 
         void performAddColorPass(uint32_t colorTextureId, bool multisampled);
 
         void performPostColorPass(
+            const uint32_t &environmentTextureId,
             const uint32_t &addColorTextureId,
             const std::vector<DirectionalLight> &directionalLights,
-            const std::vector<PointLight> &pointLights,
-            bool multisampled = false
+            const std::vector<PointLight> &pointLights
         );
 
         bool operator==(const Object &other) const;

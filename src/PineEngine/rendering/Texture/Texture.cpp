@@ -32,7 +32,7 @@ namespace PineEngine {
         }
 
         this->backend.allocateColorTexture(this->textureId, width, height, rgba);
-        this->backend.configureTextureFilterLinear(this->textureId);
+        this->backend.configureTextureFilterNearest(this->textureId);
         this->backend.configureTextureClampToEdge(this->textureId);
         std::free(rgba);
 

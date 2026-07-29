@@ -15,6 +15,20 @@ namespace PineEngine {
         return *(this->geometry);
     }
 
+    void Object::performCubeMapPass(const Tick &tick, const Camera &camera, const uint32_t &cubeMapTextureId) {
+        if (this->colorShader) {
+            this->transform.moveTo(camera.getTranslation());
+            this->colorShader->setUniformCubeMapTexture("CUBE", cubeMapTextureId);
+            this->colorShader->setUniform("MODEL_MATRIX", this->transform.getMatrix());
+            this->colorShader->setUniform("VIEW_MATRIX", camera.getViewMatrix());
+            this->colorShader->setUniform("PROJECTION_MATRIX", camera.getProjectionMatrix());
+            this->colorShader->prepareForRendering();
+        }
+        if (this->geometry) {
+            this->geometry->performRendering();
+        }
+    }
+
     void Object::performShadowMapPass(const Tick &tick, const Camera &lightCamera) {
         if (this->shadowMapShader) {
             this->shadowMapShader->setUniform("TIME", static_cast<float>(tick.elapsed));
@@ -34,6 +48,7 @@ namespace PineEngine {
         const Camera &lightCamera,
         const DirectionalLight *directionalLight,
         const PointLight *pointLight,
+        const uint32_t &environmentCubeMapTextureId,
         const uint32_t &shadowMapTextureId
     ) {
         if (this->colorShader) {
@@ -47,7 +62,8 @@ namespace PineEngine {
             this->colorShader->setUniform("LIGHT_VIEW_MATRIX", lightCamera.getViewMatrix());
             this->colorShader->setUniform("LIGHT_PROJECTION_MATRIX", lightCamera.getProjectionMatrix());
 
-            this->colorShader->setUniformTexture("SHADOW_MAP", shadowMapTextureId);
+            this->colorShader->setUniformCubeMapTexture("ENVIRONMENT_CUBE_MAP", environmentCubeMapTextureId);
+            this->colorShader->setUniformTexture("SHADOW_MAP", shadowMapTextureId, false, 1);
 
             this->colorShader->setUniform("DIRECTIONAL_LIGHT.enabled", std::vector{directionalLight == nullptr ? 0u : 1u});
             this->colorShader->setUniform("POINT_LIGHT.enabled", std::vector{pointLight == nullptr ? 0u : 1u});
@@ -82,10 +98,10 @@ namespace PineEngine {
     }
 
     void Object::performPostColorPass(
-        const uint32_t &colorTextureId,
+        const uint32_t &environmentTextureId,
+        const uint32_t &addColorTextureId,
         const std::vector<DirectionalLight> &directionalLights,
-        const std::vector<PointLight> &pointLights,
-        const bool multisampled
+        const std::vector<PointLight> &pointLights
     ) {
         float lightIntensity = 0.0f;
         for (const auto &light: directionalLights) {
@@ -97,7 +113,8 @@ namespace PineEngine {
         const float exposure = 1.0f / (lightIntensity / static_cast<float>(std::numbers::pi));
 
         if (this->colorShader) {
-            this->colorShader->setUniformTexture("COLOR", colorTextureId, multisampled);
+            this->colorShader->setUniformTexture("ENVIRONMENT", environmentTextureId, false, 0);
+            this->colorShader->setUniformTexture("COLOR", addColorTextureId, false, 1);
             this->colorShader->setUniform("EXPOSURE", std::vector{exposure});
             this->colorShader->prepareForRendering();
         }

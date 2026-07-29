@@ -96,6 +96,7 @@ namespace PineEngine {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_SAMPLES, 4);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_ALPHA_BITS, 8);
 
         this->window =
                 glfwCreateWindow(CONFIG::WINDOW_WIDTH, CONFIG::WINDOW_HEIGHT, CONFIG::WINDOW_TITLE, nullptr, nullptr);

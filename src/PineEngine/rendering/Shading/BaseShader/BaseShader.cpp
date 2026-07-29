@@ -23,8 +23,12 @@ namespace PineEngine {
         this->backend.setUniform(this->shadersId, name, value);
     }
 
-    void BaseShader::setUniformTexture(const std::string &name, const uint32_t textureId, bool multisampled) {
-        this->backend.setUniformTexture(this->shadersId, name, textureId, multisampled);
+    void BaseShader::setUniformTexture(const std::string &name, const uint32_t textureId, bool multisampled, uint32_t attributeIndex) {
+        this->backend.setUniformTexture(this->shadersId, name, textureId, multisampled, attributeIndex);
+    }
+
+    void BaseShader::setUniformCubeMapTexture(const std::string &name, uint32_t textureId) {
+        this->backend.setUniformCubeMapTexture(this->shadersId, name, textureId);
     }
 
     void BaseShader::performLoad() {

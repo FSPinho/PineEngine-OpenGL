@@ -12,8 +12,8 @@ int main() {
         auto &rb = application.getRendererBackend();
 
         auto composed_001 = Object();
-        // composed_001.setGeometry<GeometryBuffer>(Path::inDisk("models/composed_002.glb"), rb);
-        composed_001.setGeometry<GeometryBuffer>(GeometryBuffer::CUBE, rb);
+        composed_001.setGeometry<GeometryBuffer>(Path::inDisk("models/composed_002.glb"), rb);
+        // composed_001.setGeometry<GeometryBuffer>(GeometryBuffer::CUBE, rb);
         composed_001.setShadowMapShader<GraphicShader>(
             Path::inMemory(),
             Path::inDisk("shaders/PBR_01_ShadowMap/vertex.glsl"),
@@ -30,11 +30,11 @@ int main() {
 
         std::vector<DirectionalLight> dLights{
             {
-                .direction = {1.0f, 4.0f, 1.0f},
+                .direction = {4.0f, 1.0f, 4.0f},
                 .irradiance = {1000.0f, 1000.0f, 1000.0f},
                 .enableShadows = false, .enableSSAO = true
             },
-            {.direction = {0.0f, -4.0f, -1.0f}, .irradiance = {250.0f, 250.0f, 250.0f}},
+            // {.direction = {0.0f, -4.0f, -1.0f}, .irradiance = {250.0f, 250.0f, 250.0f}},
         };
         std::vector<PointLight> pLights{
             // {.translation = {2.0f, 5.0f, 2.0f}, .radiantIntensity = {5.0f, 5.0f, 5.0f}},

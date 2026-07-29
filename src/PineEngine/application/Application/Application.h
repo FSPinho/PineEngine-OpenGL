@@ -30,19 +30,20 @@ namespace PineEngine {
         Platform platform;
         RendererBackend rendererBackend;
         InputManager inputManager;
-        Camera camera = Camera(glm::vec3(4.0f, 4.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0, 45.0f, 0.1f, 100.0f);
+        Camera camera = Camera(glm::vec3(4.0f, 4.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0, glm::radians(45.0f), 0.1f, 100.0f);
         Timer timer;
 
         Scene rootScene;
 
+        ResourceHandler<FrameBuffer> environmentFrameBuffer;
         ResourceHandler<FrameBuffer> shadowMapFrameBuffer;
         ResourceHandler<FrameBuffer> colorFrameBuffer;
         ResourceHandler<FrameBuffer> addColorFrameBuffer;
+        ResourceHandler<CubeMap> environmentCubeMap;
 
+        Object environmentObject;
         Object addColorQuadObject;
         Object postProcessingQuadObject;
-
-        ResourceHandler<CubeMap> environmentCubeMap;
 
         void _performRender(const Tick &tick);
         void _performEnvironmentRender(const Tick &tick);

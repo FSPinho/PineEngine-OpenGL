@@ -33,7 +33,9 @@ namespace PineEngine {
         void setAspect(float aspect_);
         float getAspect() const;
 
+        glm::vec3 getTranslation() const;
         std::vector<float> getTranslationAsArray() const;
+        std::vector<float> getDirectionAsArray() const;
 
         const glm::vec3 &getTarget() const;
 

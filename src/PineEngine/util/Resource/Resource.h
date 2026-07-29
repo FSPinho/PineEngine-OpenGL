@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include <PineEngine/util/Path/Path.h>
 
 namespace PineEngine {
