@@ -1,29 +1,34 @@
 #include <PineEngine/editor/Editor/Editor.h>
 #include <PineEngine/util/Time/Time.h>
 #include <iostream>
+#include <filesystem>
 
 using namespace PineEngine;
 
-int main() {
+int main(int argc, char** argv) {
+    const std::filesystem::path exeDir = std::filesystem::canonical(argv[0]).parent_path();
+    LOG(">>>>>>>>>>> {}" << exeDir.string());
+
+
     try {
-        Path::setInDiskRootFolder("../examples/Basic");
+        Path::setResourceRootFolder("../examples/Basic");
 
         Application application;
         auto &rb = application.getRendererBackend();
 
         auto composed_001 = Object();
-        composed_001.setGeometry<GeometryBuffer>(Path::inDisk("models/composed_002.glb"), rb);
+        composed_001.setGeometry<GeometryBuffer>(Path::SYSTEM("assets/models/composed_003.glb"), rb);
         // composed_001.setGeometry<GeometryBuffer>(GeometryBuffer::CUBE, rb);
         composed_001.setShadowMapShader<GraphicShader>(
-            Path::inMemory(),
-            Path::inDisk("shaders/PBR_01_ShadowMap/vertex.glsl"),
-            Path::inDisk("shaders/PBR_01_ShadowMap/fragment.glsl"),
+            Path::MEMORY(),
+            Path::SYSTEM("assets/shaders/PBR_01_ShadowMap/vertex.glsl"),
+            Path::SYSTEM("assets/shaders/PBR_01_ShadowMap/fragment.glsl"),
             rb
         );
         composed_001.setColorShader<GraphicShader>(
-            Path::inMemory(),
-            Path::inDisk("shaders/PBR_02_Color/vertex.glsl"),
-            Path::inDisk("shaders/PBR_02_Color/fragment.glsl"),
+            Path::MEMORY(),
+            Path::SYSTEM("assets/shaders/PBR_02_Color/vertex.glsl"),
+            Path::SYSTEM("assets/shaders/PBR_02_Color/fragment.glsl"),
             rb
         );
         application.getRootScene().addChild(std::move(composed_001));
@@ -48,9 +53,9 @@ int main() {
             auto lightRef = Object();
             lightRef.setGeometry<GeometryBuffer>(GeometryBuffer::SPHERE, rb);
             lightRef.setColorShader<GraphicShader>(
-                Path::inMemory(),
-                Path::inDisk("shaders/PBR_02_EmitterColor/vertex.glsl"),
-                Path::inDisk("shaders/PBR_02_EmitterColor/fragment.glsl"),
+                Path::MEMORY(),
+                Path::SYSTEM("assets/shaders/PBR_02_EmitterColor/vertex.glsl"),
+                Path::SYSTEM("assets/shaders/PBR_02_EmitterColor/fragment.glsl"),
                 rb
             );
             lightRef.getTransform().moveTo(light.translation);

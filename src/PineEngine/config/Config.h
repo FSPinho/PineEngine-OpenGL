@@ -7,6 +7,7 @@ namespace PineEngine::Config {
     constexpr int WINDOW_HEIGHT = 720;
     constexpr auto WINDOW_TITLE = "Pine Engine";
 
-    constexpr auto IN_MEMORY_RESOURCE_PREFIX = "virtual:/";
-    constexpr auto IN_DISK_RESOURCE_PREFIX = "src:/";
+    constexpr auto MEMORY_RESOURCE_PREFIX = "mem:/";
+    constexpr auto EXTERNAL_RESOURCE_PREFIX = "src:/";
+    constexpr auto SYSTEM_RESOURCE_PREFIX = "sys:/";
 } // namespace PineEngine::Config

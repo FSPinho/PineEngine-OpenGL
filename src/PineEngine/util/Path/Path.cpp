@@ -27,7 +27,10 @@ namespace PineEngine {
     }
 
     std::string Path::asAbsolutePathString() const {
-        return inDiskRootFolder + "/" + this->asString(false);
+        if (this->prefix == CONFIG::SYSTEM_RESOURCE_PREFIX) {
+            return std::string(EXE_DIR) + "/" + this->asString(false);
+        }
+        return resourceRootFolder + "/" + this->asString(false);
     }
 
     bool Path::operator==(const std::string &other) const {
@@ -38,18 +41,22 @@ namespace PineEngine {
         return Path(this->asString() + "/" + other);
     }
 
-    Path Path::inMemory() {
+    Path Path::MEMORY() {
         std::string path = "auto-generated";
         path += std::to_string(SerialID::generate());
-        return std::move(Path(std::string(CONFIG::IN_MEMORY_RESOURCE_PREFIX) + "/" + path));
+        return std::move(Path(std::string(CONFIG::MEMORY_RESOURCE_PREFIX) + "/" + path));
     }
 
-    Path Path::inDisk(const std::string &path) {
-        return std::move(Path(std::string(CONFIG::IN_DISK_RESOURCE_PREFIX) + "/" + path));
+    Path Path::RESOURCE(const std::string &path) {
+        return std::move(Path(std::string(CONFIG::EXTERNAL_RESOURCE_PREFIX) + "/" + path));
     }
 
-    void Path::setInDiskRootFolder(const std::string &path) {
-        inDiskRootFolder = path;
+    Path Path::SYSTEM(const std::string &path) {
+        return std::move(Path(std::string(CONFIG::SYSTEM_RESOURCE_PREFIX) + "/" + path));
+    }
+
+    void Path::setResourceRootFolder(const std::string &path) {
+        resourceRootFolder = path;
     }
 
     void Path::_initializeParts(const std::string &path) {

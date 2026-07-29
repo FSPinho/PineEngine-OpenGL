@@ -27,7 +27,7 @@ namespace PineEngine {
                     resources.at(key).get()->load();
                 }
             } catch (const std::exception &e) {
-                throw std::runtime_error(FORMAT("Unable to load resource \"{}\": {}", key, e.what()));
+                throw std::runtime_error(FORMAT("Unable to load resource \"{}\": {}", path.asAbsolutePathString(), e.what()));
             }
 
             try {

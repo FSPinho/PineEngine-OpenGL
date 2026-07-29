@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
 
 namespace PineEngine {
     class Path {
@@ -15,11 +16,12 @@ namespace PineEngine {
         bool operator==(const std::string &other) const;
         Path operator/(const std::string &other) const;
 
-        static Path inMemory();
-        static Path inDisk(const std::string &path);
+        static Path MEMORY();
+        static Path RESOURCE(const std::string &path);
+        static Path SYSTEM(const std::string &path);
 
-        inline static std::string inDiskRootFolder;
-        static void setInDiskRootFolder(const std::string &path);
+        inline static std::string resourceRootFolder;
+        static void setResourceRootFolder(const std::string &path);
 
     private:
         std::string prefix;

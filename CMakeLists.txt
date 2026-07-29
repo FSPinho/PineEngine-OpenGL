@@ -105,6 +105,17 @@ target_compile_options(
         $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-include${CMAKE_SOURCE_DIR}/src/PineEngine/util/Log/Log.h>
 )
 
+add_custom_command(
+        TARGET PineEngine POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:PineEngine>/assets
+)
+
+target_compile_definitions(PineEngine PRIVATE
+        EXE_DIR="$<TARGET_FILE_DIR:PineEngine>"
+)
+
 # --------------------
 # Examples
 

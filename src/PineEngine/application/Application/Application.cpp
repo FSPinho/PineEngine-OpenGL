@@ -8,28 +8,28 @@ namespace PineEngine {
         : rendererBackend(this->platform),
           inputManager(this->platform),
           environmentFrameBuffer(ResourceManager::load<FrameBuffer>(
-              Path::inMemory(),
+              Path::MEMORY(),
               rendererBackend,
               FrameBufferOptions{}
           )),
           shadowMapFrameBuffer(ResourceManager::load<FrameBuffer>(
-              Path::inMemory(),
+              Path::MEMORY(),
               rendererBackend,
               FrameBufferOptions{.depth = true}
           )),
           colorFrameBuffer(ResourceManager::load<FrameBuffer>(
-              Path::inMemory(),
+              Path::MEMORY(),
               rendererBackend,
               FrameBufferOptions{.multisampled = true, .depth = true}
           )),
           addColorFrameBuffer(ResourceManager::load<FrameBuffer>(
-              Path::inMemory(),
+              Path::MEMORY(),
               rendererBackend,
               FrameBufferOptions{}
           )),
           environmentCubeMap(ResourceManager::load<CubeMap>(
-              Path::inMemory(),
-              Path::inDisk("hdri/woods-001.exr"),
+              Path::MEMORY(),
+              Path::SYSTEM("assets/hdri/woods-001.exr"),
               rendererBackend
           )) {
         LOG_CONSTRUCTOR("Application");
@@ -40,25 +40,25 @@ namespace PineEngine {
 
         this->environmentObject.setGeometry<GeometryBuffer>(GeometryBuffer::CUBE, this->rendererBackend);
         this->environmentObject.setColorShader<GraphicShader>(
-            Path::inMemory(),
-            Path::inDisk("shaders/PBR_00_CubeMapUse/vertex.glsl"),
-            Path::inDisk("shaders/PBR_00_CubeMapUse/fragment.glsl"),
+            Path::MEMORY(),
+            Path::SYSTEM("assets/shaders/PBR_00_CubeMapUse/vertex.glsl"),
+            Path::SYSTEM("assets/shaders/PBR_00_CubeMapUse/fragment.glsl"),
             this->rendererBackend
         );
 
         this->addColorQuadObject.setGeometry<GeometryBuffer>(GeometryBuffer::QUAD, this->rendererBackend);
         this->addColorQuadObject.setColorShader<GraphicShader>(
-            Path::inMemory(),
-            Path::inDisk("shaders/PBR_03_AddColor/vertex.glsl"),
-            Path::inDisk("shaders/PBR_03_AddColor/fragment.glsl"),
+            Path::MEMORY(),
+            Path::SYSTEM("assets/shaders/PBR_03_AddColor/vertex.glsl"),
+            Path::SYSTEM("assets/shaders/PBR_03_AddColor/fragment.glsl"),
             this->rendererBackend
         );
 
         this->postProcessingQuadObject.setGeometry<GeometryBuffer>(GeometryBuffer::QUAD, this->rendererBackend);
         this->postProcessingQuadObject.setColorShader<GraphicShader>(
-            Path::inMemory(),
-            Path::inDisk("shaders/PBR_04_PostColor/vertex.glsl"),
-            Path::inDisk("shaders/PBR_04_PostColor/fragment.glsl"),
+            Path::MEMORY(),
+            Path::SYSTEM("assets/shaders/PBR_04_PostColor/vertex.glsl"),
+            Path::SYSTEM("assets/shaders/PBR_04_PostColor/fragment.glsl"),
             this->rendererBackend
         );
     }

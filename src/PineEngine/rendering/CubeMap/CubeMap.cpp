@@ -10,7 +10,7 @@ namespace PineEngine {
         : Resource(path),
           backend(backend),
           cubeMapSourceTexture(ResourceManager::load<Texture>(sourcePath, backend)),
-          cubeMapFrameBuffer(ResourceManager::load<FrameBuffer>(Path::inMemory(), backend, FrameBufferOptions{.cubeMap = true, .colorLayers = 2})),
+          cubeMapFrameBuffer(ResourceManager::load<FrameBuffer>(Path::MEMORY(), backend, FrameBufferOptions{.cubeMap = true, .colorLayers = 2})),
           cubeMapGeometry(ResourceManager::load<GeometryBuffer>(GeometryBuffer::CUBE, backend)) {
         LOG_CONSTRUCTOR(FORMAT("CubeMap[{}]", this->getPath().asString()));
     }
@@ -41,9 +41,9 @@ namespace PineEngine {
         };
 
         auto cubeMapShader = ResourceManager::load<GraphicShader>(
-            Path::inMemory(),
-            Path::inDisk("shaders/PBR_00_CubeMapPrep/vertex.glsl"),
-            Path::inDisk("shaders/PBR_00_CubeMapPrep/fragment.glsl"),
+            Path::MEMORY(),
+            Path::SYSTEM("assets/shaders/PBR_00_CubeMapPrep/vertex.glsl"),
+            Path::SYSTEM("assets/shaders/PBR_00_CubeMapPrep/fragment.glsl"),
             this->backend
         );
         cubeMapShader->prepareForRendering();

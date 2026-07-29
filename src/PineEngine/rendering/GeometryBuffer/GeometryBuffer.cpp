@@ -7,9 +7,9 @@
 #include <string>
 
 namespace PineEngine {
-    Path GeometryBuffer::QUAD = Path::inDisk("models/basic/Quad.glb");
-    Path GeometryBuffer::CUBE = Path::inDisk("models/basic/Cube.glb");
-    Path GeometryBuffer::SPHERE = Path::inDisk("models/basic/Sphere.glb");
+    Path GeometryBuffer::QUAD = Path::SYSTEM("assets/models/basic/Quad.glb");
+    Path GeometryBuffer::CUBE = Path::SYSTEM("assets/models/basic/Cube.glb");
+    Path GeometryBuffer::SPHERE = Path::SYSTEM("assets/models/basic/Sphere.glb");
 
     GeometryBuffer::GeometryBuffer(const Path &path, const RendererBackend &backend)
         : Resource(path),
