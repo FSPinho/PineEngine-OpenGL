@@ -132,7 +132,7 @@ namespace PineEngine {
         this->rendererBackend.disableBlend();
         this->environmentFrameBuffer->prepareForRendering();
         this->environmentFrameBuffer->clear();
-        this->environmentObject.performCubeMapPass(tick, this->camera, this->environmentCubeMap->getTextureId());
+        this->environmentObject.performCubeMapPass(tick, this->camera, this->environmentCubeMap->getTextureId(0));
     }
 
     void Application::_performRenderWithDirectionalLights(const Tick &tick) {
@@ -161,7 +161,7 @@ namespace PineEngine {
                     lightCamera,
                     &directionalLight,
                     nullptr,
-                    this->environmentCubeMap->getTextureId(),
+                    this->environmentCubeMap->getTextureId(1),
                     this->shadowMapFrameBuffer->getDepthTextureId()
                 );
             }
@@ -195,7 +195,7 @@ namespace PineEngine {
                     lightCamera,
                     nullptr,
                     &pointLight,
-                    this->environmentCubeMap->getTextureId(),
+                    this->environmentCubeMap->getTextureId(1),
                     this->shadowMapFrameBuffer->getDepthTextureId()
                 );
             }

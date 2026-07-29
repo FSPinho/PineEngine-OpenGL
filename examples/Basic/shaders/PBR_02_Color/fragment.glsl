@@ -50,9 +50,9 @@ vec3 getShadowMapPos(vec4 position);
 void main() {
     // Material
     vec3 albedo = vec3(1.0f, 1.0f, 1.0f);
-    float roughness = 0.8;
-     vec3 reflectance = vec3(0.04);
-//     vec3 reflectance = vec3(1.000, 0.766, 0.336); // Gold
+    float roughness = 0.1;
+    vec3 reflectance = vec3(0.04);
+    // vec3 reflectance = vec3(1.000, 0.766, 0.336); // Gold
     float metallic = 0.0;
 
     // ...
@@ -94,16 +94,16 @@ void main() {
     }
 
     // Ambient light
-    vec3 I = texture(ENVIRONMENT_CUBE_MAP, N).xyz * 500.0f;
+    vec3 I = texture(ENVIRONMENT_CUBE_MAP, N).xyz * 150.0f;
     vec3 L = N;
     vec3 Li = I;
     color.xyz += I; // Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
 
     // Reflection
-//    vec3 R = reflect(-V, N);
-//    vec3 L = R;
-//    vec3 Li = texture(ENVIRONMENT_CUBE_MAP, R).xyz;
-//    color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
+    //    vec3 R = reflect(-V, N);
+    //    vec3 L = R;
+    //    vec3 Li = texture(ENVIRONMENT_CUBE_MAP, R).xyz;
+    //    color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
 }
 
 vec3 Lo(
@@ -193,7 +193,7 @@ float getSSAOAttenuation(vec4 position) {
         }
     }
     attenuation /= itCount;
-    return clamp(pow(attenuation * 2, 2.0), 0.0, 1.0);
+    return clamp(pow(attenuation * 2, 1.0), 0.0, 1.0);
 }
 
 vec3 getShadowMapPos(vec4 position) {

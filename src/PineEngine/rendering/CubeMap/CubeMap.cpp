@@ -10,7 +10,7 @@ namespace PineEngine {
         : Resource(path),
           backend(backend),
           cubeMapSourceTexture(ResourceManager::load<Texture>(sourcePath, backend)),
-          cubeMapFrameBuffer(ResourceManager::load<FrameBuffer>(Path::inMemory(), backend, FrameBufferOptions{.cubeMap = true})),
+          cubeMapFrameBuffer(ResourceManager::load<FrameBuffer>(Path::inMemory(), backend, FrameBufferOptions{.cubeMap = true, .colorLayers = 2})),
           cubeMapGeometry(ResourceManager::load<GeometryBuffer>(GeometryBuffer::CUBE, backend)) {
         LOG_CONSTRUCTOR(FORMAT("CubeMap[{}]", this->getPath().asString()));
     }
@@ -19,8 +19,8 @@ namespace PineEngine {
         LOG_DESTRUCTOR(FORMAT("CubeMap[{}]", this->getPath().asString()));
     }
 
-    uint32_t CubeMap::getTextureId() {
-        return this->cubeMapFrameBuffer->getColorTextureId();
+    uint32_t CubeMap::getTextureId(const uint32_t level) {
+        return this->cubeMapFrameBuffer->getColorTextureId(level);
     }
 
     void CubeMap::performLoad() {
@@ -55,6 +55,7 @@ namespace PineEngine {
 
         for (uint32_t i = 0; i < 6; i++) {
             this->cubeMapFrameBuffer->attachTextures(0, i);
+            this->cubeMapFrameBuffer->attachTextures(1, i);
             this->cubeMapFrameBuffer->prepareForRendering();
             this->cubeMapFrameBuffer->clear();
             cubeMapShader->setUniform("VIEW_MATRIX", views[i]);

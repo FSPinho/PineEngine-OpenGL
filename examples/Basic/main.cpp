@@ -30,11 +30,11 @@ int main() {
 
         std::vector<DirectionalLight> dLights{
             {
-                .direction = {4.0f, 1.0f, 4.0f},
+                .direction = {4.0f, 4.0f, 4.0f},
                 .irradiance = {1000.0f, 1000.0f, 1000.0f},
                 .enableShadows = false, .enableSSAO = true
             },
-            // {.direction = {0.0f, -4.0f, -1.0f}, .irradiance = {250.0f, 250.0f, 250.0f}},
+            {.direction = {0.0f, -1.0f, 0.0f}, .irradiance = {200.0f, 200.0f, 200.0f}},
         };
         std::vector<PointLight> pLights{
             // {.translation = {2.0f, 5.0f, 2.0f}, .radiantIntensity = {5.0f, 5.0f, 5.0f}},

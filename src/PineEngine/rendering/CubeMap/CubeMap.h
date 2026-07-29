@@ -13,7 +13,7 @@ namespace PineEngine {
         explicit CubeMap(const Path &path, const Path &sourcePath, const RendererBackend &backend);
         ~CubeMap() override;
 
-        uint32_t getTextureId();
+        uint32_t getTextureId(uint32_t level = 0);
 
     protected:
         void performLoad() override;
