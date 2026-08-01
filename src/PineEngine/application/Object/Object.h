@@ -5,6 +5,7 @@
 #include <PineEngine/rendering/GeometryBuffer/GeometryBuffer.h>
 #include <PineEngine/rendering/VolumeBuffer/VolumeBuffer.h>
 #include <PineEngine/rendering/Shading/GraphicShader/GraphicShader.h>
+#include <PineEngine/rendering/Material/Material.h>
 #include <PineEngine/util/ResourceHandler/ResourceHandler.h>
 #include <PineEngine/util/ResourceManager/ResourceManager.h>
 #include <PineEngine/util/Transform/Transform.h>
@@ -20,6 +21,8 @@ namespace PineEngine {
 
         Transform &getTransform();
         GeometryBuffer &getGeometry();
+
+        void setMaterial(const Material &material_);
 
         template<typename T, typename... Args>
         void setGeometry(Args &&... args) {
@@ -98,6 +101,7 @@ namespace PineEngine {
         bool isLightRef = false;
 
         Transform transform;
+        Material material;
         ResourceHandler<GeometryBuffer> geometry;
         ResourceHandler<GraphicShader> shadowMapShader;
         ResourceHandler<GraphicShader> colorShader;

@@ -9,14 +9,7 @@ namespace PineEngine {
         glm::vec3 radiantIntensity; // W/sr
         bool enableShadows = false;
         bool enableSSAO = false;
-
-        [[nodiscard]] std::vector<float> getTranslationAsArray() const {
-            return {this->translation.x, this->translation.y, this->translation.z};
-        }
-
-        [[nodiscard]] std::vector<float> getRadiantIntensityAsArray() const {
-            return {this->radiantIntensity.x, this->radiantIntensity.y, this->radiantIntensity.z};
-        }
+        bool enableSpecular = true;
     };
 
     struct DirectionalLight {
@@ -24,13 +17,6 @@ namespace PineEngine {
         glm::vec3 irradiance; // W/m2
         bool enableShadows = false;
         bool enableSSAO = false;
-
-        [[nodiscard]] std::vector<float> getDirectionAsArray() const {
-            return {this->direction.x, this->direction.y, this->direction.z};
-        }
-
-        [[nodiscard]] std::vector<float> getIrradianceAsArray() const {
-            return {this->irradiance.x, this->irradiance.y, this->irradiance.z};
-        }
+        bool enableSpecular = true;
     };
 }

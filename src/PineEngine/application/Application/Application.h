@@ -30,7 +30,7 @@ namespace PineEngine {
         Platform platform;
         RendererBackend rendererBackend;
         InputManager inputManager;
-        Camera camera = Camera(glm::vec3(4.0f, 4.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0, glm::radians(45.0f), 0.1f, 100.0f);
+        Camera camera = Camera(glm::vec3(4.0f, 4.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0, glm::radians(45.0f), 0.1f, 1000.0f);
         Timer timer;
 
         Scene rootScene;

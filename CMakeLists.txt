@@ -42,6 +42,7 @@ add_library(
         src/PineEngine/rendering/Texture/Texture.cpp
         src/PineEngine/rendering/CubeMap/CubeMap.h
         src/PineEngine/rendering/CubeMap/CubeMap.cpp
+        src/PineEngine/rendering/Material/Material.h
 
         src/PineEngine/application/Application/Application.h
         src/PineEngine/application/Application/Application.cpp

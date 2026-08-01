@@ -12,7 +12,8 @@ int main() {
         auto &rb = application.getRendererBackend();
 
         auto composed_001 = Object();
-        composed_001.setGeometry<GeometryBuffer>(Path::RESOURCE("models/composed_002.glb"), rb);
+        composed_001.setGeometry<GeometryBuffer>(Path::RESOURCE("models/_002_rounded_objects.glb"), rb);
+        composed_001.setMaterial({.roughness = 1.0f});
         application.getRootScene().addChild(std::move(composed_001));
 
         std::vector<DirectionalLight> dLights{
@@ -21,7 +22,11 @@ int main() {
                 .irradiance = {1000.0f, 1000.0f, 1000.0f},
                 .enableShadows = false, .enableSSAO = true
             },
-            {.direction = {-1.0f, -1.0f, -1.0f}, .irradiance = {200.0f, 200.0f, 200.0f}},
+            {
+                .direction = {-1.0f, -1.0f, -1.0f},
+                .irradiance = {200.0f, 200.0f, 200.0f},
+                .enableSpecular = false,
+            }
         };
         std::vector<PointLight> pLights{
             // {.translation = {2.0f, 1.0f, 2.0f}, .radiantIntensity = {5.0f, 5.0f, 5.0f}, .enableSSAO = true},

@@ -12,6 +12,7 @@ struct DirectionalLight {
     vec3 irradiance;
     uint enableShadows;
     uint enableSSAO;
+    uint enableSpecular;
 };
 uniform DirectionalLight DIRECTIONAL_LIGHT;
 
@@ -21,6 +22,7 @@ struct PointLight {
     vec3 radiantIntensity;
     uint enableShadows;
     uint enableSSAO;
+    uint enableSpecular;
 };
 uniform PointLight POINT_LIGHT;
 
@@ -31,12 +33,21 @@ uniform mat4 LIGHT_PROJECTION_MATRIX;
 uniform samplerCube ENVIRONMENT_CUBE_MAP;
 uniform sampler2D SHADOW_MAP;
 
+uniform vec3 ALBEDO;
+uniform float ROUGHNESS;
+uniform vec3 REFLECTANCE;
+uniform float METALLIC;
+uniform float TRANSMISSION;
+uniform vec3 TRANSMISSION_TINT;
+
+
 // Constants
 const float PI = 3.14159265359;
 
 vec3 Lo(
         vec3 N, vec3 L, vec3 V, vec3 Li,
-        vec3 albedo, float roughness, vec3 reflectance, float metallic
+        vec3 albedo, float roughness, vec3 reflectance, float metallic,
+        bool enableSpecular
 );
 vec3 Li_PointLight(vec3 I, float L_r);
 vec3 Li_DirectionalLight(vec3 E);
@@ -50,15 +61,7 @@ vec3 getShadowMapPos(vec4 position);
 void main() {
     color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    // Material
-    vec3 albedo = vec3(1.0f, 1.0f, 1.0f);
-    float roughness = 0.1;
-    vec3 reflectance = vec3(0.04);
-    // vec3 reflectance = vec3(1.000, 0.766, 0.336); // Gold
-    float metallic = 0.0;
-    float transmission = 0.0;
-    vec3 transmissionTint = vec3(0.5, 1.0, 0.0);
-    float transmissionAttenuation = 1.0f - transmission;
+    float transmissionAttenuation = 1.0f - TRANSMISSION;
 
     // ...
     vec3 V = normalize(VIEW_POSITION - position.xyz);
@@ -72,14 +75,15 @@ void main() {
         vec3 L = normalize(DIRECTIONAL_LIGHT.direction);
         vec3 E = DIRECTIONAL_LIGHT.irradiance;
         vec3 Li = Li_DirectionalLight(E);
+        bool enableSpecular = DIRECTIONAL_LIGHT.enableSpecular == 1u;
 
         // Normal lighting
-        color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
+        color.xyz += Lo(N, L, V, Li, ALBEDO, ROUGHNESS, REFLECTANCE, METALLIC, enableSpecular);
         color.xyz *= transmissionAttenuation;
 
         // Transmission
-        if (transmission > 0.0) {
-            vec3 Le = Li * transmission * transmissionTint;
+        if (TRANSMISSION > 0.0) {
+            vec3 Le = Li * TRANSMISSION * TRANSMISSION_TINT;
             color.xyz += Le * max(dot(N, -L), 0.0);
         }
 
@@ -97,14 +101,15 @@ void main() {
         vec3 L = normalize(L_vec);
         float L_r = length(L_vec);
         vec3 Li = Li_PointLight(I, L_r);
+        bool enableSpecular = DIRECTIONAL_LIGHT.enableSpecular == 1u;
 
         // Normal lighting
-        color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
+        color.xyz += Lo(N, L, V, Li, ALBEDO, ROUGHNESS, REFLECTANCE, METALLIC, enableSpecular);
         color.xyz *= transmissionAttenuation;
 
         // Transmission
-        if (transmission > 0.0) {
-            vec3 Le = Li * transmission * transmissionTint;
+        if (TRANSMISSION > 0.0) {
+            vec3 Le = Li * TRANSMISSION * TRANSMISSION_TINT;
             color.xyz += Le * max(dot(N, -L), 0.0);
         }
 
@@ -131,7 +136,8 @@ void main() {
 
 vec3 Lo(
         vec3 N, vec3 L, vec3 V, vec3 Li,
-        vec3 albedo, float roughness, vec3 reflectance, float metallic
+        vec3 albedo, float roughness, vec3 reflectance, float metallic,
+        bool enableSpecular
 ) {
     vec3 H = normalize(L + V);
     float epsilon = 0.000001;
@@ -153,7 +159,11 @@ vec3 Lo(
     // Diffuse
     vec3 diffuse = (1.0f - metallic) * albedo / PI;
 
-    return (diffuse + specular) * Li * N_dot_L;
+    if (enableSpecular) {
+        return (diffuse + specular) * Li * N_dot_L;
+    }
+
+    return diffuse * Li * N_dot_L;
 }
 
 

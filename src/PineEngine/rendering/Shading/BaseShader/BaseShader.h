@@ -17,6 +17,7 @@ namespace PineEngine {
 
         void setUniform(const std::string &name, const std::vector<uint32_t> &value);
         void setUniform(const std::string &name, const std::vector<float> &value);
+        void setUniform(const std::string &name, const glm::vec3 &value);
         void setUniform(const std::string &name, const glm::mat4 &value);
         void setUniformTexture(const std::string &name, uint32_t textureId, bool multisampled = false, uint32_t attributeIndex = 0);
         void setUniformCubeMapTexture(const std::string &name, uint32_t textureId);

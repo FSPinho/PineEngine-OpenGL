@@ -19,6 +19,10 @@ namespace PineEngine {
         this->backend.setUniform(this->shadersId, name, value);
     }
 
+    void BaseShader::setUniform(const std::string &name, const glm::vec3 &value) {
+        this->backend.setUniform(this->shadersId, name, std::vector{value[0], value[1], value[2]});
+    }
+
     void BaseShader::setUniform(const std::string &name, const glm::mat4 &value) {
         this->backend.setUniform(this->shadersId, name, value);
     }
@@ -27,7 +31,7 @@ namespace PineEngine {
         this->backend.setUniformTexture(this->shadersId, name, textureId, multisampled, attributeIndex);
     }
 
-    void BaseShader::setUniformCubeMapTexture(const std::string &name, uint32_t textureId) {
+    void BaseShader::setUniformCubeMapTexture(const std::string &name, const uint32_t textureId) {
         this->backend.setUniformCubeMapTexture(this->shadersId, name, textureId);
     }
 

@@ -15,6 +15,10 @@ namespace PineEngine {
         return *(this->geometry);
     }
 
+    void Object::setMaterial(const Material &material_) {
+        this->material = material_;
+    }
+
     void Object::performCubeMapPass(const Tick &tick, const Camera &camera, const uint32_t &cubeMapTextureId) {
         if (this->colorShader) {
             this->transform.moveTo(camera.getTranslation());
@@ -65,19 +69,28 @@ namespace PineEngine {
             this->colorShader->setUniformCubeMapTexture("ENVIRONMENT_CUBE_MAP", environmentCubeMapTextureId);
             this->colorShader->setUniformTexture("SHADOW_MAP", shadowMapTextureId, false, 1);
 
+            this->colorShader->setUniform("ALBEDO", this->material.albedo);
+            this->colorShader->setUniform("ROUGHNESS", std::vector{this->material.roughness});
+            this->colorShader->setUniform("REFLECTANCE", this->material.reflectance);
+            this->colorShader->setUniform("METALLIC", std::vector{this->material.metallic});
+            this->colorShader->setUniform("TRANSMISSION", std::vector{this->material.transmission});
+            this->colorShader->setUniform("TRANSMISSION_TINT", this->material.transmissionTint);
+
             this->colorShader->setUniform("DIRECTIONAL_LIGHT.enabled", std::vector{directionalLight == nullptr ? 0u : 1u});
             this->colorShader->setUniform("POINT_LIGHT.enabled", std::vector{pointLight == nullptr ? 0u : 1u});
 
             if (directionalLight != nullptr) {
-                this->colorShader->setUniform("DIRECTIONAL_LIGHT.direction", directionalLight->getDirectionAsArray());
-                this->colorShader->setUniform("DIRECTIONAL_LIGHT.irradiance", directionalLight->getIrradianceAsArray());
+                this->colorShader->setUniform("DIRECTIONAL_LIGHT.direction", directionalLight->direction);
+                this->colorShader->setUniform("DIRECTIONAL_LIGHT.irradiance", directionalLight->irradiance);
                 this->colorShader->setUniform("DIRECTIONAL_LIGHT.enableShadows", std::vector{static_cast<uint32_t>(directionalLight->enableShadows)});
                 this->colorShader->setUniform("DIRECTIONAL_LIGHT.enableSSAO", std::vector{static_cast<uint32_t>(directionalLight->enableSSAO)});
+                this->colorShader->setUniform("DIRECTIONAL_LIGHT.enableSpecular", std::vector{static_cast<uint32_t>(directionalLight->enableSpecular)});
             } else if (pointLight != nullptr) {
-                this->colorShader->setUniform("POINT_LIGHT.translation", pointLight->getTranslationAsArray());
-                this->colorShader->setUniform("POINT_LIGHT.radiantIntensity", pointLight->getRadiantIntensityAsArray());
+                this->colorShader->setUniform("POINT_LIGHT.translation", pointLight->translation);
+                this->colorShader->setUniform("POINT_LIGHT.radiantIntensity", pointLight->radiantIntensity);
                 this->colorShader->setUniform("POINT_LIGHT.enableShadows", std::vector{static_cast<uint32_t>(pointLight->enableShadows)});
                 this->colorShader->setUniform("POINT_LIGHT.enableSSAO", std::vector{static_cast<uint32_t>(pointLight->enableSSAO)});
+                this->colorShader->setUniform("POINT_LIGHT.enableSpecular", std::vector{static_cast<uint32_t>(pointLight->enableSpecular)});
             }
 
             this->colorShader->prepareForRendering();
