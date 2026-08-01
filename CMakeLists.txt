@@ -26,8 +26,6 @@ add_library(
 
         src/PineEngine/rendering/RendererBackend/RendererBackend.h
         src/PineEngine/rendering/RendererBackend/RendererBackend.cpp
-        src/PineEngine/rendering/RendererComponent/RendererComponent.h
-        src/PineEngine/rendering/RendererComponent/RendererComponent.cpp
         src/PineEngine/rendering/GeometryBuffer/GeometryBuffer.h
         src/PineEngine/rendering/GeometryBuffer/GeometryBuffer.cpp
         src/PineEngine/rendering/Shading/BaseShader/BaseShader.h
@@ -105,16 +103,17 @@ target_compile_options(
         $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-include${CMAKE_SOURCE_DIR}/src/PineEngine/util/Log/Log.h>
 )
 
-add_custom_command(
-        TARGET PineEngine POST_BUILD
+target_compile_definitions(PineEngine PRIVATE
+        EXE_DIR="$<TARGET_FILE_DIR:PineEngine>"
+)
+
+add_custom_target(
+        CopyAssets ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/assets
         $<TARGET_FILE_DIR:PineEngine>/assets
 )
-
-target_compile_definitions(PineEngine PRIVATE
-        EXE_DIR="$<TARGET_FILE_DIR:PineEngine>"
-)
+add_dependencies(PineEngine CopyAssets)
 
 # --------------------
 # Examples

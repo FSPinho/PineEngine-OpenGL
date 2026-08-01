@@ -1,13 +1,13 @@
 #pragma once
 
-#include <PineEngine/rendering/RendererComponent/RendererComponent.h>
+#include <PineEngine/rendering/RendererBackend/RendererBackend.h>
 #include <PineEngine/util/GeometryLoader/GeometryLoader.h>
 #include <PineEngine/util/Path/Path.h>
 #include <PineEngine/util/Resource/Resource.h>
 #include <vector>
 
 namespace PineEngine {
-    class GeometryBuffer : public Resource, public RendererComponent {
+    class GeometryBuffer : public Resource {
     public:
         static Path QUAD;
         static Path CUBE;
@@ -16,12 +16,12 @@ namespace PineEngine {
         explicit GeometryBuffer(const Path &path, const RendererBackend &backend);
         ~GeometryBuffer() override;
 
-        void performRendering() override;
-
         void prepareForCompute();
+        void performRendering();
 
-        uint32_t getVertexCount();
-        uint32_t getIndexCount();
+        [[nodiscard]] uint32_t getVertexCount() const;
+        [[nodiscard]] uint32_t getIndexCount() const;
+        [[nodiscard]] RendererBackend &getRendererBackend();
 
         void enableWireframe();
 
@@ -32,6 +32,7 @@ namespace PineEngine {
         void performUnload() override;
 
     private:
+        RendererBackend backend;
         GeometryLoader loader;
 
         std::vector<VertexData> verticesData;

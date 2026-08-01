@@ -123,6 +123,10 @@ namespace PineEngine {
         }
     }
 
+    void Object::markAsLightRef() {
+        this->isLightRef = true;
+    }
+
     bool Object::operator==(const Object &other) const {
         return this->id == other.id;
     }

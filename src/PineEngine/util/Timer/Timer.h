@@ -1,6 +1,5 @@
 #pragma once
 
-#include <PineEngine/rendering/RendererComponent/RendererComponent.h>
 
 namespace PineEngine {
     struct Tick {

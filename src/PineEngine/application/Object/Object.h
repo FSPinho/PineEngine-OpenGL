@@ -24,6 +24,28 @@ namespace PineEngine {
         template<typename T, typename... Args>
         void setGeometry(Args &&... args) {
             this->geometry = ResourceManager::load<T>(std::forward<Args>(args)...);
+            this->setShadowMapShader<GraphicShader>(
+                Path::MEMORY(),
+                Path::SYSTEM("assets/shaders/PBR_01_ShadowMap/vertex.glsl"),
+                Path::SYSTEM("assets/shaders/PBR_01_ShadowMap/fragment.glsl"),
+                this->geometry->getRendererBackend()
+            );
+
+            if (this->isLightRef) {
+                this->setColorShader<GraphicShader>(
+                    Path::MEMORY(),
+                    Path::SYSTEM("assets/shaders/PBR_02_EmitterColor/vertex.glsl"),
+                    Path::SYSTEM("assets/shaders/PBR_02_EmitterColor/fragment.glsl"),
+                    this->geometry->getRendererBackend()
+                );
+            } else {
+                this->setColorShader<GraphicShader>(
+                    Path::MEMORY(),
+                    Path::SYSTEM("assets/shaders/PBR_02_Color/vertex.glsl"),
+                    Path::SYSTEM("assets/shaders/PBR_02_Color/fragment.glsl"),
+                    this->geometry->getRendererBackend()
+                );
+            }
         }
 
         template<typename T, typename... Args>
@@ -66,10 +88,14 @@ namespace PineEngine {
             const std::vector<PointLight> &pointLights
         );
 
+        void markAsLightRef();
+
         bool operator==(const Object &other) const;
 
     private:
         ID id;
+
+        bool isLightRef = false;
 
         Transform transform;
         ResourceHandler<GeometryBuffer> geometry;

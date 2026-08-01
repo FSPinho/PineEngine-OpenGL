@@ -51,12 +51,12 @@ void main() {
     color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     // Material
-    vec3 albedo = vec3(0.0f, 1.0f, 0.0f);
-    float roughness = 1.0;
+    vec3 albedo = vec3(1.0f, 1.0f, 1.0f);
+    float roughness = 0.1;
     vec3 reflectance = vec3(0.04);
     // vec3 reflectance = vec3(1.000, 0.766, 0.336); // Gold
     float metallic = 0.0;
-    float transmission = 0.5;
+    float transmission = 0.0;
     vec3 transmissionTint = vec3(0.5, 1.0, 0.0);
     float transmissionAttenuation = 1.0f - transmission;
 
@@ -91,29 +91,36 @@ void main() {
         }
     }
 
-//    if (POINT_LIGHT.enabled == 1u) {
-//        vec3 I = POINT_LIGHT.radiantIntensity;
-//        vec3 L_vec = POINT_LIGHT.translation - position.xyz;
-//        vec3 L = normalize(L_vec);
-//        float L_r = length(L_vec);
-//        vec3 Li = Li_PointLight(I, L_r);
-//
-//        color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
-//        color.xyz *= transmissionAttenuation;
-//
-//        if (POINT_LIGHT.enableShadows != 0u) {
-//            color.xyz *= getShadowAttenuation(position);
-//        }
-//        if (POINT_LIGHT.enableSSAO != 0u) {
-//            color.xyz *= getSSAOAttenuation(position);
-//        }
-//    }
+    if (POINT_LIGHT.enabled == 1u) {
+        vec3 I = POINT_LIGHT.radiantIntensity;
+        vec3 L_vec = POINT_LIGHT.translation - position.xyz;
+        vec3 L = normalize(L_vec);
+        float L_r = length(L_vec);
+        vec3 Li = Li_PointLight(I, L_r);
+
+        // Normal lighting
+        color.xyz += Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
+        color.xyz *= transmissionAttenuation;
+
+        // Transmission
+        if (transmission > 0.0) {
+            vec3 Le = Li * transmission * transmissionTint;
+            color.xyz += Le * max(dot(N, -L), 0.0);
+        }
+
+        if (POINT_LIGHT.enableShadows != 0u) {
+            color.xyz *= getShadowAttenuation(position);
+        }
+        if (POINT_LIGHT.enableSSAO != 0u) {
+            color.xyz *= getSSAOAttenuation(position);
+        }
+    }
 
     // Ambient light
-     vec3 I = texture(ENVIRONMENT_CUBE_MAP, N).xyz * 150.0f;
-     vec3 L = N;
-     vec3 Li = I;
-     color.xyz += I; // Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
+    vec3 I = texture(ENVIRONMENT_CUBE_MAP, N).xyz * 150.0f;
+    vec3 L = N;
+    vec3 Li = I;
+    color.xyz += I; // Lo(N, L, V, Li, albedo, roughness, reflectance, metallic);
 
     // Reflection
     // vec3 R = reflect(-V, N);

@@ -13,7 +13,8 @@ namespace PineEngine {
 
     GeometryBuffer::GeometryBuffer(const Path &path, const RendererBackend &backend)
         : Resource(path),
-          RendererComponent(backend), loader(path) {
+          backend(backend),
+          loader(path) {
         LOG_CONSTRUCTOR(FORMAT("GeometryBuffer[{}]", this->getPath().asString()));
     }
 
@@ -36,12 +37,16 @@ namespace PineEngine {
         this->backend.bindDataBufferToShaderAccess(this->indicesBufferId, 1);
     }
 
-    uint32_t GeometryBuffer::getVertexCount() {
+    uint32_t GeometryBuffer::getVertexCount() const {
         return this->verticesData[0].data.size() / this->verticesData[0].dimensionality;
     }
 
-    uint32_t GeometryBuffer::getIndexCount() {
+    uint32_t GeometryBuffer::getIndexCount() const {
         return this->indicesCount / 3;
+    }
+
+    RendererBackend &GeometryBuffer::getRendererBackend() {
+        return this->backend;
     }
 
     void GeometryBuffer::enableWireframe() {

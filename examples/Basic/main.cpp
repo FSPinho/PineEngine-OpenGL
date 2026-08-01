@@ -1,36 +1,18 @@
-#include <PineEngine/editor/Editor/Editor.h>
-#include <PineEngine/util/Time/Time.h>
 #include <iostream>
 #include <filesystem>
+#include <PineEngine/editor/Editor/Editor.h>
 
 using namespace PineEngine;
 
-int main(int argc, char** argv) {
-    const std::filesystem::path exeDir = std::filesystem::canonical(argv[0]).parent_path();
-    LOG(">>>>>>>>>>> {}" << exeDir.string());
-
-
+int main() {
     try {
-        Path::setResourceRootFolder("../examples/Basic");
+        Path::setResourceRootFolder("../examples/Basic/assets");
 
         Application application;
         auto &rb = application.getRendererBackend();
 
         auto composed_001 = Object();
-        composed_001.setGeometry<GeometryBuffer>(Path::SYSTEM("assets/models/composed_003.glb"), rb);
-        // composed_001.setGeometry<GeometryBuffer>(GeometryBuffer::CUBE, rb);
-        composed_001.setShadowMapShader<GraphicShader>(
-            Path::MEMORY(),
-            Path::SYSTEM("assets/shaders/PBR_01_ShadowMap/vertex.glsl"),
-            Path::SYSTEM("assets/shaders/PBR_01_ShadowMap/fragment.glsl"),
-            rb
-        );
-        composed_001.setColorShader<GraphicShader>(
-            Path::MEMORY(),
-            Path::SYSTEM("assets/shaders/PBR_02_Color/vertex.glsl"),
-            Path::SYSTEM("assets/shaders/PBR_02_Color/fragment.glsl"),
-            rb
-        );
+        composed_001.setGeometry<GeometryBuffer>(Path::RESOURCE("models/composed_002.glb"), rb);
         application.getRootScene().addChild(std::move(composed_001));
 
         std::vector<DirectionalLight> dLights{
@@ -39,11 +21,11 @@ int main(int argc, char** argv) {
                 .irradiance = {1000.0f, 1000.0f, 1000.0f},
                 .enableShadows = false, .enableSSAO = true
             },
-            {.direction = {0.0f, -1.0f, 0.0f}, .irradiance = {200.0f, 200.0f, 200.0f}},
+            {.direction = {-1.0f, -1.0f, -1.0f}, .irradiance = {200.0f, 200.0f, 200.0f}},
         };
         std::vector<PointLight> pLights{
-            // {.translation = {2.0f, 5.0f, 2.0f}, .radiantIntensity = {5.0f, 5.0f, 5.0f}},
-            // {.translation = {-2.0f, 5.0f, -2.0f}, .radiantIntensity = {20.0f, 20.0f, 20.0f}},
+            // {.translation = {2.0f, 1.0f, 2.0f}, .radiantIntensity = {5.0f, 5.0f, 5.0f}, .enableSSAO = true},
+            // {.translation = {-2.0f, 1.0f, -2.0f}, .radiantIntensity = {20.0f, 20.0f, 20.0f}, .enableSSAO = true},
         };
 
         for (auto &light: dLights) {
@@ -51,13 +33,8 @@ int main(int argc, char** argv) {
         }
         for (auto &light: pLights) {
             auto lightRef = Object();
+            lightRef.markAsLightRef();
             lightRef.setGeometry<GeometryBuffer>(GeometryBuffer::SPHERE, rb);
-            lightRef.setColorShader<GraphicShader>(
-                Path::MEMORY(),
-                Path::SYSTEM("assets/shaders/PBR_02_EmitterColor/vertex.glsl"),
-                Path::SYSTEM("assets/shaders/PBR_02_EmitterColor/fragment.glsl"),
-                rb
-            );
             lightRef.getTransform().moveTo(light.translation);
             lightRef.getTransform().scaleTo(0.2);
             application.getRootScene().addChild(std::move(lightRef));
