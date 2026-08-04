@@ -11,40 +11,23 @@ int main() {
         Application application;
         auto &rb = application.getRendererBackend();
 
-        auto composed_001 = Object();
+        auto composed_001 = application.getRootScene().addChild(std::make_unique<BaseObject>());
         composed_001.setGeometry<GeometryBuffer>(Path::RESOURCE("models/_002_rounded_objects.glb"), rb);
-        composed_001.setMaterial({.roughness = 1.0f});
-        application.getRootScene().addChild(std::move(composed_001));
+        composed_001.getGeometry().enableWireframe();
+        // composed_001.markAsLightRef();
+        // composed_001.setMaterial({.roughness = 1.0f});
 
-        std::vector<DirectionalLight> dLights{
-            {
-                .direction = {4.0f, 4.0f, 4.0f},
-                .irradiance = {1000.0f, 1000.0f, 1000.0f},
-                .enableShadows = false, .enableSSAO = true
-            },
-            {
-                .direction = {-1.0f, -1.0f, -1.0f},
-                .irradiance = {200.0f, 200.0f, 200.0f},
-                .enableSpecular = false,
-            }
-        };
-        std::vector<PointLight> pLights{
-            // {.translation = {2.0f, 1.0f, 2.0f}, .radiantIntensity = {5.0f, 5.0f, 5.0f}, .enableSSAO = true},
-            // {.translation = {-2.0f, 1.0f, -2.0f}, .radiantIntensity = {20.0f, 20.0f, 20.0f}, .enableSSAO = true},
-        };
 
-        for (auto &light: dLights) {
-            application.getRootScene().addChild(std::move(light));
-        }
-        for (auto &light: pLights) {
-            auto lightRef = Object();
-            lightRef.markAsLightRef();
-            lightRef.setGeometry<GeometryBuffer>(GeometryBuffer::SPHERE, rb);
-            lightRef.getTransform().moveTo(light.translation);
-            lightRef.getTransform().scaleTo(0.2);
-            application.getRootScene().addChild(std::move(lightRef));
-            application.getRootScene().addChild(std::move(light));
-        }
+        application.getRootScene().addChild(std::make_unique<DirectionalLight>(DirectionalLight{
+            .direction = {4.0f, 4.0f, 4.0f},
+            .irradiance = {1000.0f, 1000.0f, 1000.0f},
+            .enableShadows = false, .enableSSAO = true
+        }));
+        application.getRootScene().addChild(std::make_unique<DirectionalLight>(DirectionalLight{
+            .direction = {-1.0f, -1.0f, -1.0f},
+            .irradiance = {200.0f, 200.0f, 200.0f},
+            .enableSpecular = false,
+        }));
 
         Editor editor(application);
         editor.mainLoop();

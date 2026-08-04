@@ -11,47 +11,47 @@ namespace PineEngine {
         LOG_DESTRUCTOR(FORMAT("Scene[{}]", this->id));
     }
 
-    void Scene::addChild(Scene &&child) {
+    Scene &Scene::addChild(std::unique_ptr<Scene> child) {
         if (this->parent != nullptr) {
-            this->parent->addChild(std::move(child));
-        } else {
-            this->allChildrenScenes.push_back(std::move(child));
+            return this->parent->addChild(std::move(child));
         }
+        this->allChildrenScenes.push_back(std::move(child));
+        return *this->allChildrenScenes.back();
     }
 
-    void Scene::addChild(Object &&child) {
+    BaseObject &Scene::addChild(std::unique_ptr<BaseObject> child) {
         if (this->parent != nullptr) {
-            this->parent->addChild(std::move(child));
-        } else {
-            this->allChildrenObjects.push_back(child);
+            return this->parent->addChild(std::move(child));
         }
+        this->allChildrenObjects.push_back(std::move(child));
+        return *this->allChildrenObjects.back();
     }
 
-    void Scene::addChild(PointLight &&child) {
+    PointLight &Scene::addChild(std::unique_ptr<PointLight> child) {
         if (this->parent != nullptr) {
-            this->parent->addChild(std::move(child));
-        } else {
-            this->allChildrenPointLights.push_back(child);
+            return this->parent->addChild(std::move(child));
         }
+        this->allChildrenPointLights.push_back(std::move(child));
+        return *this->allChildrenPointLights.back();
     }
 
-    void Scene::addChild(DirectionalLight &&child) {
+    DirectionalLight &Scene::addChild(std::unique_ptr<DirectionalLight> child) {
         if (this->parent != nullptr) {
-            this->parent->addChild(std::move(child));
-        } else {
-            this->allChildrenDirectionalLights.push_back(child);
+            return this->parent->addChild(std::move(child));
         }
+        this->allChildrenDirectionalLights.push_back(std::move(child));
+        return *this->allChildrenDirectionalLights.back();
     }
 
-    std::vector<Object> &Scene::getObjects() {
+    std::vector<std::unique_ptr<BaseObject> > &Scene::getObjects() {
         return this->allChildrenObjects;
     }
 
-    std::vector<PointLight> &Scene::getPointLights() {
+    std::vector<std::unique_ptr<PointLight> > &Scene::getPointLights() {
         return this->allChildrenPointLights;
     }
 
-    std::vector<DirectionalLight> &Scene::getDirectionalLights() {
+    std::vector<std::unique_ptr<DirectionalLight> > &Scene::getDirectionalLights() {
         return this->allChildrenDirectionalLights;
     }
 } // namespace PineEngine

@@ -2,6 +2,7 @@
 
 #include <PineEngine/util/OcclusionMap/OcclusionMap.h>
 #include <PineEngine/util/Timer/Timer.h>
+#include <PineEngine/util/Terrain/Terrain.h>
 #include <stdexcept>
 #include <numbers>
 #include <string>
@@ -93,6 +94,7 @@ namespace PineEngine {
 
     void GeometryBuffer::performLoad() {
         std::tie(this->verticesData, this->indices) = this->loader.load();
+
         this->verticesData.push_back({
             .name = "vertexInLightInfluence",
             .data = std::vector(this->verticesData[0].data.size(), 0.0f),

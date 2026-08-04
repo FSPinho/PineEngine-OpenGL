@@ -9,6 +9,11 @@
 
 namespace PineEngine {
     GeometryLoader::GeometryLoader(const Path &path) : path(path) {
+        LOG_CONSTRUCTOR("GeometryLoader");
+    }
+
+    GeometryLoader::~GeometryLoader() {
+        LOG_DESTRUCTOR("GeometryLoader");
     }
 
     std::pair<std::vector<VertexData>, std::vector<uint32_t> > GeometryLoader::load() {
@@ -25,8 +30,8 @@ namespace PineEngine {
             throw std::runtime_error(FORMAT("Failed to load model \"{}\"!", path_));
         }
 
-        VertexData vertices{.name = "vertexInPosition", .data = {}, .dimensionality = 4};
-        VertexData normals{.name = "vertexInNormal", .data = {}, .dimensionality = 4};
+        VertexData vertices{.name = "position", .data = {}, .dimensionality = 4};
+        VertexData normals{.name = "normal", .data = {}, .dimensionality = 4};
         std::vector<uint32_t> indices;
 
         uint32_t indexOffset = 0;

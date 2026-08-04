@@ -489,14 +489,14 @@ namespace PineEngine {
     }
 
     void RendererBackend::drawTriangles(const uint32_t vertexCount) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawElements(GL_TRIANGLES, static_cast<GLint>(vertexCount), GL_UNSIGNED_INT, nullptr);
-
         this->_debugMethod("Draw", true);
     }
 
     void RendererBackend::drawWireframe(const uint32_t vertexCount) {
-        glDrawElements(GL_LINES, static_cast<GLint>(vertexCount), GL_UNSIGNED_INT, nullptr);
-
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDrawElements(GL_TRIANGLES, static_cast<GLint>(vertexCount), GL_UNSIGNED_INT, nullptr);
         this->_debugMethod("Draw", true);
     }
 

@@ -43,19 +43,19 @@ add_library(
         src/PineEngine/rendering/CubeMap/CubeMap.h
         src/PineEngine/rendering/CubeMap/CubeMap.cpp
         src/PineEngine/rendering/Material/Material.h
+        src/PineEngine/rendering/Light/Light.h
 
         src/PineEngine/application/Application/Application.h
         src/PineEngine/application/Application/Application.cpp
         src/PineEngine/application/Scene/Scene.h
         src/PineEngine/application/Scene/Scene.cpp
-        src/PineEngine/application/Object/Object.h
-        src/PineEngine/application/Object/Object.cpp
+        src/PineEngine/application/Objects/BaseObject/BaseObject.h
+        src/PineEngine/application/Objects/BaseObject/BaseObject.cpp
         src/PineEngine/application/Camera/Camera.h
         src/PineEngine/application/Camera/Camera.cpp
-        src/PineEngine/application/Light/Light.h
+
         src/PineEngine/editor/CameraController/CameraController.h
         src/PineEngine/editor/CameraController/CameraController.cpp
-
         src/PineEngine/editor/Editor/Editor.h
         src/PineEngine/editor/Editor/Editor.cpp
 
@@ -82,6 +82,7 @@ add_library(
         src/PineEngine/Util/GeometryLoader/GeometryLoader.cpp
         src/PineEngine/util/OcclusionMap/OcclusionMap.h
         src/PineEngine/util/Subdivider/Subdivider.h
+        src/PineEngine/util/Terrain/Terrain.h
 )
 target_link_libraries(
         PineEngine PUBLIC

@@ -138,15 +138,14 @@ namespace PineEngine {
     void Application::_performRenderWithDirectionalLights(const Tick &tick) {
         for (const auto &directionalLight: this->rootScene.getDirectionalLights()) {
             // Shadow map
-
             this->shadowMapFrameBuffer->prepareForRendering();
             this->shadowMapFrameBuffer->clear();
             const auto &target = this->camera.getTarget();
-            const auto &translation = target + glm::normalize(directionalLight.direction) * 50.0f;
+            const auto &translation = target + glm::normalize(directionalLight->direction) * 50.0f;
             Camera lightCamera(translation, target, -10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-            if (directionalLight.enableShadows || directionalLight.enableSSAO) {
-                for (auto &object: this->rootScene.getObjects()) {
-                    object.performShadowMapPass(tick, lightCamera);
+            if (directionalLight->enableShadows || directionalLight->enableSSAO) {
+                for (const auto &object: this->rootScene.getObjects()) {
+                    object->performShadowMapPass(tick, lightCamera);
                 }
             }
 
@@ -154,12 +153,12 @@ namespace PineEngine {
             this->rendererBackend.disableBlend();
             this->colorFrameBuffer->prepareForRendering();
             this->colorFrameBuffer->clear();
-            for (auto &object: this->rootScene.getObjects()) {
-                object.performColorPass(
+            for (const auto &object: this->rootScene.getObjects()) {
+                object->performColorPass(
                     tick,
                     this->camera,
                     lightCamera,
-                    &directionalLight,
+                    directionalLight.get(),
                     nullptr,
                     this->environmentCubeMap->getTextureId(1),
                     this->shadowMapFrameBuffer->getDepthTextureId()
@@ -176,11 +175,11 @@ namespace PineEngine {
             this->shadowMapFrameBuffer->prepareForRendering();
             this->shadowMapFrameBuffer->clear();
             const auto &target = this->camera.getTarget();
-            const auto &translation = pointLight.translation;
+            const auto &translation = pointLight->translation;
             Camera lightCamera(translation, target, 1.0f, glm::radians(90.0f), 0.1f, 100.0f);
-            if (pointLight.enableShadows || pointLight.enableSSAO) {
-                for (auto &object: this->rootScene.getObjects()) {
-                    object.performShadowMapPass(tick, lightCamera);
+            if (pointLight->enableShadows || pointLight->enableSSAO) {
+                for (const auto &object: this->rootScene.getObjects()) {
+                    object->performShadowMapPass(tick, lightCamera);
                 }
             }
 
@@ -188,13 +187,13 @@ namespace PineEngine {
             this->rendererBackend.disableBlend();
             this->colorFrameBuffer->prepareForRendering();
             this->colorFrameBuffer->clear();
-            for (auto &object: this->rootScene.getObjects()) {
-                object.performColorPass(
+            for (const auto &object: this->rootScene.getObjects()) {
+                object->performColorPass(
                     tick,
                     this->camera,
                     lightCamera,
                     nullptr,
-                    &pointLight,
+                    pointLight.get(),
                     this->environmentCubeMap->getTextureId(1),
                     this->shadowMapFrameBuffer->getDepthTextureId()
                 );

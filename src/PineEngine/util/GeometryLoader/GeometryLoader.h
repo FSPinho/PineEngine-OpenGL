@@ -13,8 +13,9 @@ namespace PineEngine {
     class GeometryLoader {
     public:
         explicit GeometryLoader(const Path &path);
+        virtual ~GeometryLoader();
 
-        std::pair<std::vector<VertexData>, std::vector<uint32_t> > load();
+        virtual std::pair<std::vector<VertexData>, std::vector<uint32_t> > load();
 
     private:
         Path path;

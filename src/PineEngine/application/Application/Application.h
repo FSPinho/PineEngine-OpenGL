@@ -1,7 +1,7 @@
 #pragma once
 
 #include <functional>
-#include <PineEngine/application/Object/Object.h>
+#include <PineEngine/application/Objects/BaseObject/BaseObject.h>
 #include <PineEngine/application/Scene/Scene.h>
 #include <PineEngine/application/Camera/Camera.h>
 #include <PineEngine/platform/InputManager/InputManager.h>
@@ -30,7 +30,7 @@ namespace PineEngine {
         Platform platform;
         RendererBackend rendererBackend;
         InputManager inputManager;
-        Camera camera = Camera(glm::vec3(4.0f, 4.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0, glm::radians(45.0f), 0.1f, 1000.0f);
+        Camera camera = Camera(glm::vec3(100.0f, 100.0f, 100.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0, glm::radians(45.0f), 0.1f, 1000.0f);
         Timer timer;
 
         Scene rootScene;
@@ -41,9 +41,9 @@ namespace PineEngine {
         ResourceHandler<FrameBuffer> addColorFrameBuffer;
         ResourceHandler<CubeMap> environmentCubeMap;
 
-        Object environmentObject;
-        Object addColorQuadObject;
-        Object postProcessingQuadObject;
+        BaseObject environmentObject;
+        BaseObject addColorQuadObject;
+        BaseObject postProcessingQuadObject;
 
         void _performRender(const Tick &tick);
         void _performEnvironmentRender(const Tick &tick);
