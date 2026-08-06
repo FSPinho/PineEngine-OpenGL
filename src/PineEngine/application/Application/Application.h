@@ -1,7 +1,7 @@
 #pragma once
 
 #include <functional>
-#include <PineEngine/application/Objects/BaseObject/BaseObject.h>
+#include <PineEngine/application/Object/Object.h>
 #include <PineEngine/application/Scene/Scene.h>
 #include <PineEngine/application/Camera/Camera.h>
 #include <PineEngine/platform/InputManager/InputManager.h>
@@ -30,7 +30,7 @@ namespace PineEngine {
         Platform platform;
         RendererBackend rendererBackend;
         InputManager inputManager;
-        Camera camera = Camera(glm::vec3(100.0f, 100.0f, 100.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0, glm::radians(45.0f), 0.1f, 1000.0f);
+        Camera camera = Camera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0, glm::radians(45.0f), 0.1f, 1000.0f);
         Timer timer;
 
         Scene rootScene;
@@ -41,14 +41,32 @@ namespace PineEngine {
         ResourceHandler<FrameBuffer> addColorFrameBuffer;
         ResourceHandler<CubeMap> environmentCubeMap;
 
-        BaseObject environmentObject;
-        BaseObject addColorQuadObject;
-        BaseObject postProcessingQuadObject;
+        Object environmentObject;
+        Object addColorQuadObject;
+        Object postProcessingQuadObject;
+
+        ResourceHandler<GraphicShader> shadowMapShader;
 
         void _performRender(const Tick &tick);
-        void _performEnvironmentRender(const Tick &tick);
+        void _performEnvironmentRender();
         void _performRenderWithDirectionalLights(const Tick &tick);
         void _performRenderWithPointLights(const Tick &tick);
         void _performRenderAddColor();
+
+        void performObjectShadowMapPass(
+            const std::unique_ptr<Object> &object,
+            const Camera &lightCamera
+        );
+
+        void performObjectColorPass(
+            const std::unique_ptr<Object> &object,
+            const Tick &tick,
+            const Camera &lightCamera,
+            const std::unique_ptr<DirectionalLight> &directionalLight,
+            const std::unique_ptr<PointLight> &pointLight,
+            const uint32_t &shadowMapTextureId
+        );
+
+        void _performRenderPostColor(const uint32_t &width, const uint32_t &height);
     };
 } // namespace PineEngine

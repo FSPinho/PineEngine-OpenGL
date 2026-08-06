@@ -2,9 +2,8 @@
 
 #include <functional>
 #include <utility>
-#include <stdexcept>
-#include <PineEngine/util/Log/Log.h>
 #include <PineEngine/util/Resource/Resource.h>
+#include <PineEngine/util/Log/Log.h>
 
 
 namespace PineEngine {
@@ -28,26 +27,31 @@ namespace PineEngine {
               ),
               onAcquire(std::move(onAcquire)),
               onRelease(std::move(onRelease)) {
-
-            if (this->resource != nullptr && this->onAcquire != nullptr) {
-                this->onAcquire(this->resourceKey);
-            }
+            this->_notifyAcquire();
         }
 
         ResourceHandler(const ResourceHandler &other)
             : ResourceHandler(other.resource, other.onAcquire, other.onRelease) {
         }
 
-        ResourceHandler &operator=(const ResourceHandler &) = delete;
+        ResourceHandler &operator=(const ResourceHandler &other)  {
+            if (this != &other) {
+                this->_notifyRelease();
+                this->resource = other.resource;
+                this->resourceKey = other.resource != nullptr ? other.resource->getPath().asString() : "-undefined-";
+                this->onAcquire = other.onAcquire;
+                this->onRelease = other.onRelease;
+                this->_notifyAcquire();
+            }
+            return *this;
+        }
 
         ResourceHandler(ResourceHandler &&) noexcept = default;
 
         ResourceHandler &operator=(ResourceHandler &&) noexcept = default;
 
         ~ResourceHandler() {
-            if (this->resource != nullptr && this->onRelease != nullptr) {
-                this->onRelease(this->resourceKey);
-            }
+            this->_notifyRelease();
         }
 
         R *operator->() { return this->resource; }
@@ -61,5 +65,17 @@ namespace PineEngine {
 
         std::function<void(std::string key)> onAcquire;
         std::function<void(std::string key)> onRelease;
+
+        void _notifyAcquire() {
+            if (this->resource != nullptr && this->onAcquire != nullptr) {
+                this->onAcquire(this->resourceKey);
+            }
+        }
+
+        void _notifyRelease() {
+            if (this->resource != nullptr && this->onRelease != nullptr) {
+                this->onRelease(this->resourceKey);
+            }
+        }
     };
 } // namespace PineEngine

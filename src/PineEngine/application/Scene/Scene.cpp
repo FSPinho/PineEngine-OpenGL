@@ -19,7 +19,7 @@ namespace PineEngine {
         return *this->allChildrenScenes.back();
     }
 
-    BaseObject &Scene::addChild(std::unique_ptr<BaseObject> child) {
+    Object &Scene::addChild(std::unique_ptr<Object> child) {
         if (this->parent != nullptr) {
             return this->parent->addChild(std::move(child));
         }
@@ -43,7 +43,7 @@ namespace PineEngine {
         return *this->allChildrenDirectionalLights.back();
     }
 
-    std::vector<std::unique_ptr<BaseObject> > &Scene::getObjects() {
+    std::vector<std::unique_ptr<Object> > &Scene::getObjects() {
         return this->allChildrenObjects;
     }
 

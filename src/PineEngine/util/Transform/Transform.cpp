@@ -25,7 +25,8 @@ namespace PineEngine {
 
     const glm::mat4 &Transform::getMatrix() {
         if (this->shouldRecomputeTransform) {
-            this->transform = glm::translate(glm::mat4(1.0f), this->translation) * glm::mat4_cast(this->rotation) *
+            this->transform = glm::translate(glm::mat4(1.0f), this->translation) *
+                              glm::mat4_cast(this->rotation) *
                               glm::scale(glm::mat4(1.0f), this->scale);
             this->shouldRecomputeTransform = false;
         }

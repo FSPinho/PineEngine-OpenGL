@@ -12,9 +12,9 @@
 #define LOG(...) PineEngine::Log::i() << __VA_ARGS__
 #endif
 
-#define LOG_CONSTRUCTOR(...) LOG("[+] " << __VA_ARGS__)
-#define LOG_DESTRUCTOR(...) LOG("[-] " << __VA_ARGS__)
-#define LOG_METHOD(...) LOG("--- " << __VA_ARGS__)
+#define LOG_CONSTRUCTOR(...) // LOG("[+] " << __VA_ARGS__)
+#define LOG_DESTRUCTOR(...) // LOG("[-] " << __VA_ARGS__)
+#define LOG_METHOD(...) // LOG("--- " << __VA_ARGS__)
 
 #define FORMAT(...) std::format(__VA_ARGS__)
 

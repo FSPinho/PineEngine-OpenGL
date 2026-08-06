@@ -151,10 +151,30 @@ TEST_CASE (
         REQUIRE(TestResource::unloadCallCount == 2);
     }
 
-    SECTION("Copied handler correctly cleaned") {
+    SECTION("Copied handler correctly cleaned [case 1]") {
         {
             PineEngine::ResourceHandler<TestResource> handler1 = PineEngine::ResourceManager::load<TestResource>(PineEngine::Path("some/resource1"));
             PineEngine::ResourceHandler<TestResource> handler2 = handler1;
+            REQUIRE(PineEngine::ResourceManager::getResourceUsage(PineEngine::Path("some/resource1")) == 2);
+            REQUIRE(TestResource::constructorCallCount == 1);
+            REQUIRE(TestResource::destructorCallCount == 0);
+            REQUIRE(TestResource::loadCallCount == 1);
+            REQUIRE(TestResource::unloadCallCount == 0);
+        }
+        REQUIRE(PineEngine::ResourceManager::getResourceUsage(PineEngine::Path("some/resource1")) == 0);
+        REQUIRE(TestResource::constructorCallCount == 1);
+        REQUIRE(TestResource::destructorCallCount == 1);
+        REQUIRE(TestResource::loadCallCount == 1);
+        REQUIRE(TestResource::unloadCallCount == 1);
+    }
+
+    SECTION("Copied handler correctly cleaned [case 2]") {
+        {
+            PineEngine::ResourceHandler<TestResource> handler1 = PineEngine::ResourceManager::load<TestResource>(PineEngine::Path("some/resource1"));
+            PineEngine::ResourceHandler<TestResource> handler2;
+
+            handler2 = handler1;
+
             REQUIRE(PineEngine::ResourceManager::getResourceUsage(PineEngine::Path("some/resource1")) == 2);
             REQUIRE(TestResource::constructorCallCount == 1);
             REQUIRE(TestResource::destructorCallCount == 0);
