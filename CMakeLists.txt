@@ -51,6 +51,8 @@ add_library(
         src/PineEngine/application/Scene/Scene.cpp
         src/PineEngine/application/Objects/BaseObject/BaseObject.h
         src/PineEngine/application/Objects/BaseObject/BaseObject.cpp
+        src/PineEngine/application/Objects/MeshObject/MeshObject.h
+        src/PineEngine/application/Objects/MeshObject/MeshObject.cpp
         src/PineEngine/application/Camera/Camera.h
         src/PineEngine/application/Camera/Camera.cpp
 

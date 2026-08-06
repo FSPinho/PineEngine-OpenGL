@@ -1,6 +1,7 @@
 #include <iostream>
 #include <filesystem>
 #include <PineEngine/editor/Editor/Editor.h>
+#include <PineEngine/application/Objects/MeshObject/MeshObject.h>
 
 using namespace PineEngine;
 
@@ -11,12 +12,10 @@ int main() {
         Application application;
         auto &rb = application.getRendererBackend();
 
-        auto composed_001 = application.getRootScene().addChild(std::make_unique<BaseObject>());
-        composed_001.setGeometry<GeometryBuffer>(Path::RESOURCE("models/_002_rounded_objects.glb"), rb);
-        composed_001.getGeometry().enableWireframe();
-        // composed_001.markAsLightRef();
-        // composed_001.setMaterial({.roughness = 1.0f});
-
+        auto composed_001 = std::make_unique<MeshObject>();
+        composed_001->setGeometry<GeometryBuffer>(Path::RESOURCE("models/_002_rounded_objects.glb"), rb);
+        composed_001->setMaterial({.roughness = 1.0f});
+        application.getRootScene().addChild(std::move(composed_001));
 
         application.getRootScene().addChild(std::make_unique<DirectionalLight>(DirectionalLight{
             .direction = {4.0f, 4.0f, 4.0f},
